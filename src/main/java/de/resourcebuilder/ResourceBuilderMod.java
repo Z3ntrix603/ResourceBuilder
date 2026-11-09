@@ -10,6 +10,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.resources.Identifier;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,10 @@ public class ResourceBuilderMod implements ClientModInitializer {
 
     public static final String MOD_ID = "resourcebuilder";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+
+    public static final KeyMapping.Category CATEGORY = KeyMapping.Category.register(
+            Identifier.fromNamespaceAndPath(MOD_ID, "main")
+    );
 
     private static KeyMapping openGuiKey;
     private static int hotkeyCode = GLFW.GLFW_KEY_R;
@@ -41,7 +46,7 @@ public class ResourceBuilderMod implements ClientModInitializer {
                 "key.resourcebuilder.open",
                 InputConstants.Type.KEYSYM,
                 hotkeyCode,
-                KeyMapping.Category.MISC
+                CATEGORY
         ));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {

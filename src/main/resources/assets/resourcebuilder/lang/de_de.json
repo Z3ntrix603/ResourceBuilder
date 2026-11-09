@@ -13,5 +13,9 @@
     "resourcebuilder.export.success": "Pack erfolgreich exportiert!",
     "resourcebuilder.export.name": "Pack-Name:",
     "resourcebuilder.no_packs": "Keine Resource Packs geladen",
-    "resourcebuilder.select_texture": "Texturquelle auswählen"
+    "resourcebuilder.select_texture": "Texturquelle auswählen",
+    "key.resourcebuilder.open": "ResourceBuilder Studio öffnen",
+    "key.category.resourcebuilder.main": "ResourceBuilder",
+    "key.category.resourcebuilder": "ResourceBuilder",
+    "key.categories.resourcebuilder": "ResourceBuilder"
 }
