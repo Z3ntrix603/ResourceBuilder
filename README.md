@@ -1,4 +1,4 @@
-﻿# ResourceBuilder ðŸŽ¨
+# ResourceBuilder
 
 > **ResourceBuilder** is a high-performance Minecraft Fabric mod for dynamic, on-the-fly texture pack mixing and custom sound selection without restarting the client.
 
@@ -8,7 +8,7 @@
 
 ---
 
-## âœ¨ Features
+## Features
 
 - **Live Dynamic Mixing:** Mix textures (Swords, Crystals, Totems, Armor, Fire, Cobwebs, Particles, etc.) from any of your installed resource packs into a single active live pack.
 - **Obsidian Dark Studio UI:** Modern dark slate UI with smooth pagination, category sidebar, and real-time live preview cards.
@@ -20,16 +20,16 @@
 
 ---
 
-## âŒ¨ï¸ Commands & Keybinds
+## Commands & Keybinds
 
 | Action | Command / Key | Description |
 |---|---|---|
 | Open Studio | `/resource` or `/rb` | Opens the ResourceBuilder Studio UI |
-| Keybind | Configurable | Can be bound in Options â†’ Controls â†’ Key Binds |
+| Keybind | Configurable | Can be bound in Options -> Controls -> Key Binds |
 
 ---
 
-## ðŸ› ï¸ Building from Source
+## Building from Source
 
 ### Prerequisites
 - **JDK 21+**
@@ -45,5 +45,5 @@ The compiled `.jar` file will be located in `build/libs/`.
 
 ---
 
-## ðŸ“œ License
+## License
 This project is licensed under the [MIT License](LICENSE).
