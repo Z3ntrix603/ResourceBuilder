@@ -5,7 +5,7 @@ import de.resourcebuilder.pack.LivePackManager;
 import de.resourcebuilder.pack.TextureVariant;
 import de.resourcebuilder.preset.Preset;
 import de.resourcebuilder.preset.PresetManager;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
@@ -194,28 +194,28 @@ public class TextureStudioScreen extends Screen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor extractor, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
         // Backdrop
-        extractor.fill(0, 0, this.width, this.height, COLOR_BACKDROP);
+        guiGraphics.fill(0, 0, this.width, this.height, COLOR_BACKDROP);
 
         int winX = (this.width - WIN_WIDTH) / 2;
         int winY = (this.height - WIN_HEIGHT) / 2;
 
         // Clean Modern Rounded Window Frame
-        drawRoundedBox(extractor, winX, winY, WIN_WIDTH, WIN_HEIGHT, COLOR_WIN_BG, COLOR_WIN_BORDER);
+        drawRoundedBox(guiGraphics, winX, winY, WIN_WIDTH, WIN_HEIGHT, COLOR_WIN_BG, COLOR_WIN_BORDER);
 
         // Header Background
-        extractor.fill(winX + 2, winY + 2, winX + WIN_WIDTH - 2, winY + HEADER_HEIGHT, COLOR_WIN_HEADER);
-        extractor.fill(winX + 2, winY + HEADER_HEIGHT, winX + WIN_WIDTH - 2, winY + HEADER_HEIGHT + 1, COLOR_WIN_BORDER);
+        guiGraphics.fill(winX + 2, winY + 2, winX + WIN_WIDTH - 2, winY + HEADER_HEIGHT, COLOR_WIN_HEADER);
+        guiGraphics.fill(winX + 2, winY + HEADER_HEIGHT, winX + WIN_WIDTH - 2, winY + HEADER_HEIGHT + 1, COLOR_WIN_BORDER);
 
         // Header Title: Texture Studio (NO ugly gradient line!)
-        extractor.text(this.font, "Texture Studio", winX + 10, winY + 7, COLOR_TEXT_WHITE, true);
+        guiGraphics.drawString(this.font, "Texture Studio", winX + 10, winY + 7, COLOR_TEXT_WHITE, true);
 
         // Sidebar Background
         int sidebarY = winY + HEADER_HEIGHT + 1;
         int sidebarH = WIN_HEIGHT - HEADER_HEIGHT - 3;
-        extractor.fill(winX + 2, sidebarY, winX + SIDEBAR_WIDTH, winY + WIN_HEIGHT - 2, COLOR_SIDEBAR_BG);
-        extractor.fill(winX + SIDEBAR_WIDTH, sidebarY, winX + SIDEBAR_WIDTH + 1, winY + WIN_HEIGHT - 2, COLOR_WIN_BORDER);
+        guiGraphics.fill(winX + 2, sidebarY, winX + SIDEBAR_WIDTH, winY + WIN_HEIGHT - 2, COLOR_SIDEBAR_BG);
+        guiGraphics.fill(winX + SIDEBAR_WIDTH, sidebarY, winX + SIDEBAR_WIDTH + 1, winY + WIN_HEIGHT - 2, COLOR_WIN_BORDER);
 
         // Sidebar Category Items
         PvPItem[] items = PvPItem.values();
@@ -232,11 +232,11 @@ public class TextureStudioScreen extends Screen {
             boolean isHov = mouseX >= winX + 2 && mouseX < winX + SIDEBAR_WIDTH - 2 && mouseY >= iy && mouseY < iy + itemH;
 
             int bg = isSel ? COLOR_SIDEBAR_SELECTED : (isHov ? COLOR_SIDEBAR_ITEM : COLOR_SIDEBAR_BG);
-            drawRoundedBox(extractor, winX + 2, iy, SIDEBAR_WIDTH - 4, itemH - 1, bg, isSel ? COLOR_ACCENT : COLOR_WIN_BORDER);
+            drawRoundedBox(guiGraphics, winX + 2, iy, SIDEBAR_WIDTH - 4, itemH - 1, bg, isSel ? COLOR_ACCENT : COLOR_WIN_BORDER);
 
             String label = truncate((item.isSound() ? "♪ " : "") + item.getDisplayName(), 14);
             int textColor = isSel ? COLOR_TEXT_WHITE : (isHov ? COLOR_CYAN : COLOR_TEXT_GRAY);
-            extractor.text(this.font, label, winX + 8, iy + 4, textColor, isSel);
+            guiGraphics.drawString(this.font, label, winX + 8, iy + 4, textColor, isSel);
         }
 
         // Sidebar scrollbar indicator
@@ -245,7 +245,7 @@ public class TextureStudioScreen extends Screen {
             int barH = Math.max(12, trackH * maxVisible / items.length);
             int barY = sidebarY + 4 + (trackH - barH) * sidebarScroll / (items.length - maxVisible);
             int barX = winX + SIDEBAR_WIDTH - 3;
-            extractor.fill(barX, barY, barX + 2, barY + barH, 0xFF33456B);
+            guiGraphics.fill(barX, barY, barX + 2, barY + barH, 0xFF33456B);
         }
 
         // Content Area
@@ -254,14 +254,14 @@ public class TextureStudioScreen extends Screen {
 
         if (!showPresetView) {
             PvPItem currentItem = getCurrentItem();
-            extractor.text(this.font, currentItem.getDisplayName(), contentX, contentY + 4, COLOR_TEXT_WHITE, true);
+            guiGraphics.drawString(this.font, currentItem.getDisplayName(), contentX, contentY + 4, COLOR_TEXT_WHITE, true);
 
             List<TextureVariant> variants = LivePackManager.getInstance().getVariants(currentItem);
             int totalPages = Math.max(1, (variants.size() + SLOTS_PER_PAGE - 1) / SLOTS_PER_PAGE);
             String pageStr = (currentPage + 1) + " / " + totalPages;
             int rightAlign = winX + WIN_WIDTH - 10;
             int pStrWidth = this.font.width(pageStr);
-            extractor.text(this.font, pageStr, rightAlign - 34 - pStrWidth, contentY + 5, COLOR_TEXT_GRAY, true);
+            guiGraphics.drawString(this.font, pageStr, rightAlign - 34 - pStrWidth, contentY + 5, COLOR_TEXT_GRAY, true);
 
             // Slot Grid
             int gridStartY = contentY + 18;
@@ -285,14 +285,14 @@ public class TextureStudioScreen extends Screen {
                 if (isHov) hoveredVariant = v;
 
                 int borderColor = isSelected ? COLOR_SLOT_SELECTED : (isHov ? COLOR_SLOT_HOVER : COLOR_SLOT_BORDER);
-                drawRoundedBox(extractor, sx, sy, SLOT_SIZE, SLOT_SIZE, COLOR_SLOT_BG, borderColor);
+                drawRoundedBox(guiGraphics, sx, sy, SLOT_SIZE, SLOT_SIZE, COLOR_SLOT_BG, borderColor);
 
                 if (isSelected) {
                     // Double border highlight
-                    extractor.fill(sx + 2, sy + 2, sx + SLOT_SIZE - 2, sy + 3, COLOR_SLOT_SELECTED);
-                    extractor.fill(sx + 2, sy + SLOT_SIZE - 3, sx + SLOT_SIZE - 2, sy + SLOT_SIZE - 2, COLOR_SLOT_SELECTED);
-                    extractor.fill(sx + 2, sy + 3, sx + 3, sy + SLOT_SIZE - 3, COLOR_SLOT_SELECTED);
-                    extractor.fill(sx + SLOT_SIZE - 3, sy + 3, sx + SLOT_SIZE - 2, sy + SLOT_SIZE - 3, COLOR_SLOT_SELECTED);
+                    guiGraphics.fill(sx + 2, sy + 2, sx + SLOT_SIZE - 2, sy + 3, COLOR_SLOT_SELECTED);
+                    guiGraphics.fill(sx + 2, sy + SLOT_SIZE - 3, sx + SLOT_SIZE - 2, sy + SLOT_SIZE - 2, COLOR_SLOT_SELECTED);
+                    guiGraphics.fill(sx + 2, sy + 3, sx + 3, sy + SLOT_SIZE - 3, COLOR_SLOT_SELECTED);
+                    guiGraphics.fill(sx + SLOT_SIZE - 3, sy + 3, sx + SLOT_SIZE - 2, sy + SLOT_SIZE - 3, COLOR_SLOT_SELECTED);
                 }
 
                 // Render Preview (NO hearts!)
@@ -300,25 +300,25 @@ public class TextureStudioScreen extends Screen {
                 int py = sy + (SLOT_SIZE - PREVIEW_SIZE) / 2;
 
                 if (v.isDefault()) {
-                    extractor.fakeItem(currentItem.getItemStack(), sx + (SLOT_SIZE - 16) / 2, sy + (SLOT_SIZE - 16) / 2);
+                    guiGraphics.renderFakeItem(currentItem.getItemStack(), sx + (SLOT_SIZE - 16) / 2, sy + (SLOT_SIZE - 16) / 2);
                 } else {
                     Identifier texId = v.getTextureId();
                     if (texId != null) {
-                        extractor.blit(texId, px, py, px + PREVIEW_SIZE, py + PREVIEW_SIZE, 0.0f, 1.0f, 0.0f, 1.0f);
+                        guiGraphics.blit(texId, px, py, px + PREVIEW_SIZE, py + PREVIEW_SIZE, 0.0f, 1.0f, 0.0f, 1.0f);
                     } else {
-                        extractor.fakeItem(currentItem.getItemStack(), sx + (SLOT_SIZE - 16) / 2, sy + (SLOT_SIZE - 16) / 2);
+                        guiGraphics.renderFakeItem(currentItem.getItemStack(), sx + (SLOT_SIZE - 16) / 2, sy + (SLOT_SIZE - 16) / 2);
                     }
                 }
 
                 if (currentItem.isSound()) {
-                    extractor.text(this.font, "♪", sx + SLOT_SIZE - 9, sy + 3, COLOR_CYAN, true);
+                    guiGraphics.drawString(this.font, "♪", sx + SLOT_SIZE - 9, sy + 3, COLOR_CYAN, true);
                 }
             }
 
             int statusY = winY + WIN_HEIGHT - 35;
-            extractor.text(this.font, statusMessage, contentX, statusY, COLOR_SUCCESS, true);
+            guiGraphics.drawString(this.font, statusMessage, contentX, statusY, COLOR_SUCCESS, true);
 
-            super.extractRenderState(extractor, mouseX, mouseY, delta);
+            super.render(guiGraphics, mouseX, mouseY, delta);
 
             // Tooltip
             if (hoveredVariant != null && !showSavePresetDialog) {
@@ -326,39 +326,39 @@ public class TextureStudioScreen extends Screen {
                 int tw = this.font.width(tip) + 8;
                 int tx = Math.min(mouseX + 8, this.width - tw - 4);
                 int ty = mouseY - 14;
-                drawRoundedBox(extractor, tx - 2, ty - 2, tw + 4, 15, 0xF2090E18, COLOR_CYAN);
-                extractor.text(this.font, tip, tx + 2, ty + 1, COLOR_TEXT_WHITE, true);
+                drawRoundedBox(guiGraphics, tx - 2, ty - 2, tw + 4, 15, 0xF2090E18, COLOR_CYAN);
+                guiGraphics.drawString(this.font, tip, tx + 2, ty + 1, COLOR_TEXT_WHITE, true);
             }
 
         } else {
-            extractor.text(this.font, "Gespeicherte Presets", contentX, contentY + 4, COLOR_TEXT_WHITE, true);
-            super.extractRenderState(extractor, mouseX, mouseY, delta);
+            guiGraphics.drawString(this.font, "Gespeicherte Presets", contentX, contentY + 4, COLOR_TEXT_WHITE, true);
+            super.render(guiGraphics, mouseX, mouseY, delta);
         }
 
         if (showSavePresetDialog) {
-            renderModalBox(extractor, "Preset speichern", 190, 75);
+            renderModalBox(guiGraphics, "Preset speichern", 190, 75);
         }
     }
 
-    private void drawRoundedBox(GuiGraphicsExtractor extractor, int x, int y, int w, int h, int bg, int border) {
-        extractor.fill(x + 1, y, x + w - 1, y + h, bg);
-        extractor.fill(x, y + 1, x + 1, y + h - 1, bg);
-        extractor.fill(x + w - 1, y + 1, x + w, y + h - 1, bg);
+    private void drawRoundedBox(GuiGraphics guiGraphics, int x, int y, int w, int h, int bg, int border) {
+        guiGraphics.fill(x + 1, y, x + w - 1, y + h, bg);
+        guiGraphics.fill(x, y + 1, x + 1, y + h - 1, bg);
+        guiGraphics.fill(x + w - 1, y + 1, x + w, y + h - 1, bg);
 
-        extractor.fill(x + 1, y, x + w - 1, y + 1, border);
-        extractor.fill(x + 1, y + h - 1, x + w - 1, y + h, border);
-        extractor.fill(x, y + 1, x + 1, y + h - 1, border);
-        extractor.fill(x + w - 1, y + 1, x + w, y + h - 1, border);
+        guiGraphics.fill(x + 1, y, x + w - 1, y + 1, border);
+        guiGraphics.fill(x + 1, y + h - 1, x + w - 1, y + h, border);
+        guiGraphics.fill(x, y + 1, x + 1, y + h - 1, border);
+        guiGraphics.fill(x + w - 1, y + 1, x + w, y + h - 1, border);
     }
 
-    private void renderModalBox(GuiGraphicsExtractor extractor, String title, int w, int h) {
+    private void renderModalBox(GuiGraphics guiGraphics, String title, int w, int h) {
         int mx = (this.width - w) / 2;
         int my = (this.height - h) / 2;
 
-        extractor.fill(0, 0, this.width, this.height, 0xAA000000);
-        drawRoundedBox(extractor, mx, my, w, h, 0xFF0F172A, COLOR_ACCENT);
-        extractor.text(this.font, title, mx + 10, my + 8, COLOR_TEXT_WHITE, true);
-        super.extractRenderState(extractor, 0, 0, 0);
+        guiGraphics.fill(0, 0, this.width, this.height, 0xAA000000);
+        drawRoundedBox(guiGraphics, mx, my, w, h, 0xFF0F172A, COLOR_ACCENT);
+        guiGraphics.drawString(this.font, title, mx + 10, my + 8, COLOR_TEXT_WHITE, true);
+        super.render(guiGraphics, 0, 0, 0);
     }
 
     @Override
