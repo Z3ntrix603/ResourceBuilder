@@ -1,0 +1,22 @@
+{
+    "schemaVersion": 1,
+    "id": "resourcebuilder",
+    "version": "${version}",
+    "name": "Resource Builder",
+    "description": "In-game PvP Resource Pack Builder - Mix and match textures live in-game!",
+    "authors": ["ResourceBuilder Team"],
+    "contact": {},
+    "license": "MIT",
+    "icon": "assets/resourcebuilder/icon.png",
+    "environment": "client",
+    "entrypoints": {
+        "client": ["de.resourcebuilder.ResourceBuilderMod"]
+    },
+    "mixins": [],
+    "depends": {
+        "fabricloader": ">=0.16.0",
+        "minecraft": ">=26.2",
+        "java": ">=25",
+        "fabric-api": "*"
+    }
+}

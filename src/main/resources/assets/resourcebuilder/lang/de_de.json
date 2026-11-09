@@ -1,0 +1,17 @@
+{
+    "resourcebuilder.title": "Resource Builder",
+    "resourcebuilder.category.swords": "Schwerter",
+    "resourcebuilder.category.tools": "Werkzeuge",
+    "resourcebuilder.category.armor": "Rüstung",
+    "resourcebuilder.category.consumables": "Verbrauchsgegenstände",
+    "resourcebuilder.category.blocks": "Blöcke",
+    "resourcebuilder.category.ranged": "Fernkampf",
+    "resourcebuilder.category.utility": "Hilfsmittel",
+    "resourcebuilder.button.export": "Pack exportieren",
+    "resourcebuilder.button.reset": "Alles zurücksetzen",
+    "resourcebuilder.button.load": "Packs laden",
+    "resourcebuilder.export.success": "Pack erfolgreich exportiert!",
+    "resourcebuilder.export.name": "Pack-Name:",
+    "resourcebuilder.no_packs": "Keine Resource Packs geladen",
+    "resourcebuilder.select_texture": "Texturquelle auswählen"
+}
