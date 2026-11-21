@@ -1,0 +1,30 @@
+{
+  "required": true,
+  "package": "de.resourcebuilder.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "StudioBlurMixin",
+    "ZoomCameraMixin",
+    "ZoomWheelMixin",
+    "HandMixin",
+    "GroundStateMixin",
+    "GroundMixin",
+    "LightMixin",
+    "ReticleMixin",
+    "SkyMixin",
+    "WeatherMixin",
+    "CrystalMixin",
+    "FireMixin",
+    "HitMixin",
+    "HurtStateMixin",
+    "HurtMixin",
+    "ArmorTintMixin",
+    "CrystalPartMixin",
+    "ParticleMixin",
+    "IntegratedKillCreditMixin",
+    "RemoteKillEffectMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

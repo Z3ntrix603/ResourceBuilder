@@ -1,0 +1,251 @@
+{
+  "CRYSTALS": [
+    "item/end_crystal",
+    "entity/end_crystal/end_crystal",
+    "entity/end_crystal/end_crystal_beam"
+  ],
+  "RESPAWN_ANCHOR": [
+    "block/respawn_anchor_top_off",
+    "block/respawn_anchor_bottom",
+    "block/respawn_anchor_side0",
+    "block/respawn_anchor_side1",
+    "block/respawn_anchor_side2",
+    "block/respawn_anchor_side3",
+    "block/respawn_anchor_side4",
+    "block/respawn_anchor_top"
+  ],
+  "GLOWSTONE": [
+    "block/glowstone"
+  ],
+  "OBSIDIAN": [
+    "block/obsidian"
+  ],
+  "CRYING_OBSIDIAN": [
+    "block/crying_obsidian"
+  ],
+  "TOTEM": [
+    "item/totem_of_undying"
+  ],
+  "GOLDEN_APPLE": [
+    "item/golden_apple"
+  ],
+  "ENCHANTED_GOLDEN_APPLE": [
+    "item/enchanted_golden_apple"
+  ],
+  "ENDER_PEARL": [
+    "item/ender_pearl"
+  ],
+  "COBWEB": [
+    "block/cobweb"
+  ],
+  "TNT": [
+    "block/tnt_side",
+    "block/tnt_bottom",
+    "block/tnt_top"
+  ],
+  "FIRE": [
+    "block/fire_0",
+    "block/fire_1",
+    "block/soul_fire_0",
+    "block/soul_fire_1"
+  ],
+  "WIND_CHARGE": [
+    "item/wind_charge"
+  ],
+  "FIREWORK_ROCKET": [
+    "item/firework_rocket"
+  ],
+  "SHIELD": [
+    "entity/shield/shield_base_nopattern",
+    "entity/shield/shield_base"
+  ],
+  "DIAMOND_SWORD": [
+    "item/diamond_sword"
+  ],
+  "NETHERITE_SWORD": [
+    "item/netherite_sword"
+  ],
+  "MACE": [
+    "item/mace"
+  ],
+  "DIAMOND_AXE": [
+    "item/diamond_axe"
+  ],
+  "NETHERITE_AXE": [
+    "item/netherite_axe"
+  ],
+  "DIAMOND_PICKAXE": [
+    "item/diamond_pickaxe"
+  ],
+  "NETHERITE_PICKAXE": [
+    "item/netherite_pickaxe"
+  ],
+  "BOW": [
+    "item/bow",
+    "item/bow_pulling_0",
+    "item/bow_pulling_1",
+    "item/bow_pulling_2"
+  ],
+  "CROSSBOW": [
+    "item/crossbow_standby",
+    "item/crossbow_arrow",
+    "item/crossbow_firework",
+    "item/crossbow_pulling_0",
+    "item/crossbow_pulling_1",
+    "item/crossbow_pulling_2"
+  ],
+  "POTION": [
+    "item/potion"
+  ],
+  "SPLASH_POTION": [
+    "item/splash_potion"
+  ],
+  "DIAMOND_ARMOR": [
+    "item/diamond_chestplate",
+    "item/diamond_boots",
+    "item/diamond_leggings",
+    "item/diamond_helmet",
+    "entity/equipment/humanoid/diamond",
+    "entity/equipment/humanoid_leggings/diamond"
+  ],
+  "NETHERITE_ARMOR": [
+    "item/netherite_chestplate",
+    "item/netherite_boots",
+    "item/netherite_leggings",
+    "item/netherite_helmet",
+    "entity/equipment/humanoid/netherite",
+    "entity/equipment/humanoid_leggings/netherite"
+  ],
+  "ELYTRA": [
+    "item/elytra",
+    "entity/equipment/wings/elytra",
+    "item/elytra_broken"
+  ],
+  "CRIT_PARTICLES": [
+    "particle/critical_hit"
+  ],
+  "CRYSTAL_EXPLOSION": [
+    "particle/explosion_0",
+    "particle/explosion_1",
+    "particle/explosion_10",
+    "particle/explosion_11",
+    "particle/explosion_12",
+    "particle/explosion_13",
+    "particle/explosion_14",
+    "particle/explosion_15",
+    "particle/explosion_2",
+    "particle/explosion_3",
+    "particle/explosion_4",
+    "particle/explosion_5",
+    "particle/explosion_6",
+    "particle/explosion_7",
+    "particle/explosion_8",
+    "particle/explosion_9"
+  ],
+  "TOTEM_POPS": [
+    "particle/glitter_0",
+    "particle/glitter_1",
+    "particle/glitter_2",
+    "particle/glitter_3",
+    "particle/glitter_4",
+    "particle/glitter_5",
+    "particle/glitter_6",
+    "particle/glitter_7"
+  ],
+  "BLOCKS": [
+    "block/grass_block_top",
+    "block/grass_block_side",
+    "block/grass_block_side_overlay",
+    "block/dirt"
+  ],
+  "XP": [
+    "item/experience_bottle"
+  ],
+  "SHOVEL": [
+    "item/diamond_shovel"
+  ],
+  "SPEAR": [
+    "item/netherite_spear",
+    "item/netherite_spear_in_hand"
+  ],
+  "TRIDENT": [
+    "item/trident",
+    "entity/trident/trident"
+  ],
+  "HUD": [
+    "gui/sprites/hud/hotbar",
+    "gui/sprites/hud/hotbar_selection"
+  ],
+  "HEARTS": [
+    "gui/sprites/hud/heart/full",
+    "gui/sprites/hud/heart/absorbing_full",
+    "gui/sprites/hud/heart/absorbing_full_blinking",
+    "gui/sprites/hud/heart/absorbing_half",
+    "gui/sprites/hud/heart/absorbing_half_blinking",
+    "gui/sprites/hud/heart/absorbing_hardcore_full",
+    "gui/sprites/hud/heart/absorbing_hardcore_full_blinking",
+    "gui/sprites/hud/heart/absorbing_hardcore_half",
+    "gui/sprites/hud/heart/absorbing_hardcore_half_blinking",
+    "gui/sprites/hud/heart/container",
+    "gui/sprites/hud/heart/container_blinking",
+    "gui/sprites/hud/heart/container_hardcore",
+    "gui/sprites/hud/heart/container_hardcore_blinking",
+    "gui/sprites/hud/heart/frozen_full",
+    "gui/sprites/hud/heart/frozen_full_blinking",
+    "gui/sprites/hud/heart/frozen_half",
+    "gui/sprites/hud/heart/frozen_half_blinking",
+    "gui/sprites/hud/heart/frozen_hardcore_full",
+    "gui/sprites/hud/heart/frozen_hardcore_full_blinking",
+    "gui/sprites/hud/heart/frozen_hardcore_half",
+    "gui/sprites/hud/heart/frozen_hardcore_half_blinking",
+    "gui/sprites/hud/heart/full_blinking",
+    "gui/sprites/hud/heart/half",
+    "gui/sprites/hud/heart/half_blinking",
+    "gui/sprites/hud/heart/hardcore_full",
+    "gui/sprites/hud/heart/hardcore_full_blinking",
+    "gui/sprites/hud/heart/hardcore_half",
+    "gui/sprites/hud/heart/hardcore_half_blinking",
+    "gui/sprites/hud/heart/poisoned_full",
+    "gui/sprites/hud/heart/poisoned_full_blinking",
+    "gui/sprites/hud/heart/poisoned_half",
+    "gui/sprites/hud/heart/poisoned_half_blinking",
+    "gui/sprites/hud/heart/poisoned_hardcore_full",
+    "gui/sprites/hud/heart/poisoned_hardcore_full_blinking",
+    "gui/sprites/hud/heart/poisoned_hardcore_half",
+    "gui/sprites/hud/heart/poisoned_hardcore_half_blinking",
+    "gui/sprites/hud/heart/vehicle_container",
+    "gui/sprites/hud/heart/vehicle_full",
+    "gui/sprites/hud/heart/vehicle_half",
+    "gui/sprites/hud/heart/withered_full",
+    "gui/sprites/hud/heart/withered_full_blinking",
+    "gui/sprites/hud/heart/withered_half",
+    "gui/sprites/hud/heart/withered_half_blinking",
+    "gui/sprites/hud/heart/withered_hardcore_full",
+    "gui/sprites/hud/heart/withered_hardcore_full_blinking",
+    "gui/sprites/hud/heart/withered_hardcore_half",
+    "gui/sprites/hud/heart/withered_hardcore_half_blinking"
+  ],
+  "HUNGER": [
+    "gui/sprites/hud/food_full",
+    "gui/sprites/hud/food_empty",
+    "gui/sprites/hud/food_empty_hunger",
+    "gui/sprites/hud/food_full_hunger",
+    "gui/sprites/hud/food_half",
+    "gui/sprites/hud/food_half_hunger"
+  ],
+  "XP_BAR": [
+    "gui/sprites/hud/experience_bar_progress",
+    "gui/sprites/hud/experience_bar_background"
+  ],
+  "CROSSHAIR": [
+    "gui/sprites/hud/crosshair"
+  ],
+  "FONT": [
+    "font/ascii"
+  ],
+  "SKY": [
+    "environment/end_sky",
+    "environment/celestial/sun",
+    "environment/clouds"
+  ]
+}

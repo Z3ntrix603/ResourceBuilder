@@ -1,482 +1,510 @@
 package de.resourcebuilder.gui;
 
+import static de.resourcebuilder.StudioSettings.S;
+import static de.resourcebuilder.StudioSettings.favorite;
+
 import de.resourcebuilder.category.PvPItem;
-import de.resourcebuilder.pack.LivePackManager;
-import de.resourcebuilder.pack.TextureVariant;
-import de.resourcebuilder.preset.Preset;
-import de.resourcebuilder.preset.PresetManager;
+import de.resourcebuilder.pack.*;
+import de.resourcebuilder.preset.*;
+
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.input.KeyEvent;
-import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.client.input.*;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
-import net.minecraft.sounds.SoundEvents;
+
 import org.lwjgl.glfw.GLFW;
 
-import java.util.List;
+import java.util.*;
 
-public class TextureStudioScreen extends Screen {
+public final class TextureStudioScreen extends StudioScreen {
 
-    private static final int WIN_WIDTH = 368;
-    private static final int WIN_HEIGHT = 214;
-    private static final int SIDEBAR_WIDTH = 112;
-    private static final int HEADER_HEIGHT = 24;
+    static final int TEXT = 0xffedf3ef, MUTED = 0xffa0afa9, ACCENT = 0xff92e2be;
 
-    private static final int GRID_COLS = 6;
-    private static final int GRID_ROWS = 3;
-    private static final int SLOTS_PER_PAGE = GRID_COLS * GRID_ROWS; // 18
-    private static final int SLOT_SIZE = 34;
-    private static final int SLOT_SPACING = 4;
-    private static final int PREVIEW_SIZE = 24;
+    private final LivePackManager packs = LivePackManager.getInstance();
 
-    // Modern Obsidian Dark UI Colors
-    private static final int COLOR_BACKDROP = 0x85000000;
-    private static final int COLOR_WIN_BG = 0xF4090E18;
-    private static final int COLOR_WIN_HEADER = 0xFF0B1220;
-    private static final int COLOR_WIN_BORDER = 0xFF1E293B;
+    private final PreviewCache previews = new PreviewCache();
 
-    private static final int COLOR_SIDEBAR_BG = 0xFF080D16;
-    private static final int COLOR_SIDEBAR_ITEM = 0xFF0F172A;
-    private static final int COLOR_SIDEBAR_SELECTED = 0xFF1E293B;
-    private static final int COLOR_CYAN = 0xFF00E5FF;
-    private static final int COLOR_ACCENT = 0xFF38BDF8;
+    private PvPItem item = PvPItem.CRYSTALS;
 
-    private static final int COLOR_SLOT_BG = 0xFF0D1424;
-    private static final int COLOR_SLOT_BORDER = 0xFF1C2840;
-    private static final int COLOR_SLOT_HOVER = 0xFF2563EB;
-    private static final int COLOR_SLOT_SELECTED = 0xFFFFFFFF;
-    private static final int COLOR_TEXT_WHITE = 0xFFFFFFFF;
-    private static final int COLOR_TEXT_GRAY = 0xFF94A3B8;
-    private static final int COLOR_SUCCESS = 0xFF4ADE80;
+    private String query = "", status = "";
 
-    private int activeItemIndex = 0;
-    private int currentPage = 0;
-    private String statusMessage = "Angewendet. Dein Mix ist gespeichert.";
+    private StudioTab tab = StudioTab.ITEMS;
+    private final EnumMap<StudioTab, PvPItem> lastGroup = new EnumMap<>(StudioTab.class);
 
-    private boolean showPresetView = false;
-    private boolean showSavePresetDialog = false;
-    private EditBox presetNameField;
+    private int left,
+            top,
+            right,
+            bottom,
+            nav,
+            gridX,
+            gridY,
+            cols,
+            rows,
+            cell,
+            cellH,
+            firstRow,
+            navOffset;
 
-    private int sidebarScroll = 0;
+    private int toolbarY;
+    private EditBox search;
+
+    private List<TextureVariant> entries = List.of();
+
+    private List<PvPItem> groups = List.of();
 
     public TextureStudioScreen() {
-        super(Component.literal("Texture Studio"));
+        super(Component.literal("Resource Builder"));
     }
 
     @Override
     protected void init() {
-        super.init();
-        rebuildUI();
-    }
 
-    private void rebuildUI() {
-        this.clearWidgets();
+        packs.scanAllPacks();
 
-        int winX = (this.width - WIN_WIDTH) / 2;
-        int winY = (this.height - WIN_HEIGHT) / 2;
+        layout();
 
-        // Close button '✕'
-        this.addRenderableWidget(Button.builder(Component.literal("✕"), b -> onClose())
-                .bounds(winX + WIN_WIDTH - 18, winY + 4, 14, 14).build());
+        refresh();
 
-        // Header Tab: Presets
-        this.addRenderableWidget(Button.builder(Component.literal(showPresetView ? "← Items" : "Presets"), b -> {
-            showPresetView = !showPresetView;
-            showSavePresetDialog = false;
-            rebuildUI();
-        }).bounds(winX + WIN_WIDTH - 84, winY + 4, 62, 15).build());
+        int header = top + 7;
 
-        int contentX = winX + SIDEBAR_WIDTH + 10;
-        int contentY = winY + HEADER_HEIGHT + 4;
+        int pw = Math.min(72, (right - left) / 7);
 
-        if (!showPresetView) {
-            PvPItem currentItem = getCurrentItem();
-            List<TextureVariant> variants = LivePackManager.getInstance().getVariants(currentItem);
-            int totalPages = Math.max(1, (variants.size() + SLOTS_PER_PAGE - 1) / SLOTS_PER_PAGE);
+        addRenderableWidget(
+                new StudioButton(
+                        right - pw * 2 - 10,
+                        header,
+                        pw,
+                        17,
+                        "Profiles",
+                        () -> minecraft.setScreenAndShow(new ProfilesScreen(this))));
 
-            int pBtnY = contentY + 2;
-            int rightAlign = winX + WIN_WIDTH - 10;
+        addRenderableWidget(
+                new StudioButton(
+                        right - pw - 7,
+                        header,
+                        pw,
+                        17,
+                        "Settings",
+                        () -> minecraft.setScreenAndShow(new SettingsScreen(this))));
 
-            this.addRenderableWidget(Button.builder(Component.literal(">"), b -> {
-                if (currentPage < totalPages - 1) {
-                    currentPage++;
-                    rebuildUI();
-                }
-            }).bounds(rightAlign - 14, pBtnY, 14, 14).build());
-
-            this.addRenderableWidget(Button.builder(Component.literal("<"), b -> {
-                if (currentPage > 0) {
-                    currentPage--;
-                    rebuildUI();
-                }
-            }).bounds(rightAlign - 30, pBtnY, 14, 14).build());
-
-            // Bottom Buttons
-            int bottomY = winY + WIN_HEIGHT - 22;
-
-            this.addRenderableWidget(Button.builder(Component.literal("Preset speichern"), b -> {
-                showSavePresetDialog = true;
-                rebuildUI();
-            }).bounds(contentX, bottomY, 110, 16).build());
-
-            this.addRenderableWidget(Button.builder(Component.literal("Zurücksetzen"), b -> {
-                LivePackManager.getInstance().resetAll();
-                statusMessage = "Alle Texturen auf Standard zurückgesetzt.";
-                rebuildUI();
-            }).bounds(contentX + 115, bottomY, 82, 16).build());
-
-        } else {
-            // Presets view buttons
-            int py = contentY + 18;
-            List<Preset> presets = PresetManager.getInstance().getPresets();
-            for (int i = 0; i < Math.min(presets.size(), 6); i++) {
-                Preset p = presets.get(i);
-                int btnY = py + i * 20;
-
-                this.addRenderableWidget(Button.builder(Component.literal("Laden: " + truncate(p.getName(), 16)), b -> {
-                    LivePackManager.getInstance().applyPreset(p);
-                    statusMessage = "Preset '" + p.getName() + "' geladen!";
-                    showPresetView = false;
-                    rebuildUI();
-                }).bounds(contentX, btnY, 195, 16).build());
-
-                this.addRenderableWidget(Button.builder(Component.literal("✕"), b -> {
-                    PresetManager.getInstance().deletePreset(p.getName());
-                    rebuildUI();
-                }).bounds(contentX + 198, btnY, 16, 16).build());
+        int tabX = left + 9, tabY = top + 34;
+        for (StudioTab section : StudioTab.values()) {
+            int tabW = tabWidth(section);
+            if (tabX + tabW > right - 8) {
+                tabX = left + 9;
+                tabY += 19;
             }
-
-            int bottomY = winY + WIN_HEIGHT - 22;
-            this.addRenderableWidget(Button.builder(Component.literal("+ Aktuellen Mix speichern"), b -> {
-                showSavePresetDialog = true;
-                rebuildUI();
-            }).bounds(contentX, bottomY, 160, 16).build());
+            addRenderableWidget(
+                    new StudioButton(
+                            tabX,
+                            tabY,
+                            tabW,
+                            17,
+                            section.label,
+                            section == tab,
+                            () -> openTab(section)));
+            tabX += tabW + 2;
         }
 
-        // Save Preset Modal Dialog
-        if (showSavePresetDialog) {
-            int modalW = 190;
-            int modalH = 75;
-            int modalX = (this.width - modalW) / 2;
-            int modalY = (this.height - modalH) / 2;
-
-            presetNameField = new EditBox(this.font, modalX + 10, modalY + 22, modalW - 20, 16, Component.literal("Preset Name"));
-            presetNameField.setValue("Mein PvP Mix");
-            this.addRenderableWidget(presetNameField);
-
-            this.addRenderableWidget(Button.builder(Component.literal("Speichern"), b -> {
-                String name = presetNameField.getValue().trim();
-                if (!name.isEmpty()) {
-                    PresetManager.getInstance().savePreset(name, getCurrentSelectionsMap());
-                    statusMessage = "Preset '" + name + "' gespeichert!";
-                }
-                showSavePresetDialog = false;
-                rebuildUI();
-            }).bounds(modalX + 10, modalY + 46, 80, 16).build());
-
-            this.addRenderableWidget(Button.builder(Component.literal("Abbrechen"), b -> {
-                showSavePresetDialog = false;
-                rebuildUI();
-            }).bounds(modalX + 96, modalY + 46, 80, 16).build());
+        addRenderableWidget(
+                new StudioButton(right - 65, bottom - 23, 58, 16, "Done", this::onClose));
+        if (tab == StudioTab.KILLS) {
+            search = null;
+            int cardWidth = (right - gridX - 8) / 3;
+            int cardHeight = Math.min(100, (bottom - 36 - gridY) / 2);
+            int x = gridX;
+            for (int i=0; i<KillEffectCard.MODES.length; i++) {
+                addRenderableWidget(new KillEffectCard(x + (i%3)*cardWidth, gridY + (i/3)*(cardHeight+4),
+                        cardWidth - 4, cardHeight, KillEffectCard.MODES[i]));
+            }
+            addRenderableWidget(new StudioButton(right-117, toolbarY, 106, 17,
+                    "Finisher sound � " + (S.finisherSounds ? "On" : "Off"), () -> {
+                        S.finisherSounds = !S.finisherSounds;
+                        S.save();
+                        rebuildWidgets();
+                    }));
+            return;
         }
+        int y = toolbarY;
+        int sw = Math.min(128, (right - gridX) / 2);
+        search = new EditBox(font, right - sw - 9, y + 5, sw, 16, Component.literal("Find style"));
+
+        search.setBordered(false);
+        search.setMaxLength(80);
+        search.setValue(query);
+        search.setHint(Component.literal("Find style …").withColor(MUTED & 0xffffff));
+
+        search.setResponder(
+                value -> {
+                    query = value;
+                    firstRow = 0;
+                    refresh();
+                });
+        addRenderableWidget(search);
+
+        addRenderableWidget(
+                new StudioButton(
+                        left + 7,
+                        bottom - 23,
+                        Math.max(65, nav - 14),
+                        16,
+                        S.favoritesOnly ? "★ Favorites" : "☆ Favorites",
+                        () -> {
+                            S.favoritesOnly = !S.favoritesOnly;
+                            S.save();
+                            firstRow = 0;
+                            rebuildWidgets();
+                        }));
     }
 
-    private PvPItem getCurrentItem() {
-        PvPItem[] items = PvPItem.values();
-        if (activeItemIndex < 0 || activeItemIndex >= items.length) {
-            activeItemIndex = 0;
+    private int tabWidth(StudioTab section) {
+        return font.width(section.label) + (section == StudioTab.HOTBAR ? 27 : 13);
+    }
+
+    private boolean widePreview() {
+        return tab == StudioTab.SKY || tab == StudioTab.HOTBAR || tab == StudioTab.VITALS;
+    }
+
+    private void layout() {
+
+        int padX = Math.clamp(width / 15, 6, 64);
+        int padY = Math.clamp(height / 13, 5, 34);
+        int w =
+                Math.max(
+                        Math.min(width - 8, 296),
+                        (int) (Math.min(width - padX * 2, 870) * Math.clamp(S.windowSize, .76, 1)));
+        int h =
+                Math.max(
+                        Math.min(height - 8, 208),
+                        (int)
+                                (Math.min(height - padY * 2, 510)
+                                        * Math.clamp(S.windowSize, .76, 1)));
+        left = (width - w) / 2;
+        right = left + w;
+        top = (height - h) / 2;
+        bottom = top + h;
+        nav = tab.hasSidebar() ? Math.clamp(w / 5, 78, 126) : 0;
+        int used = 0;
+        toolbarY = top + 58;
+        for (StudioTab section : StudioTab.values()) {
+            int tabW = tabWidth(section);
+            if (used + tabW > w - 17) {
+                toolbarY += 19;
+                used = 0;
+            }
+            used += tabW + 2;
         }
-        return items[activeItemIndex];
+        gridX = left + nav + 10;
+        gridY = toolbarY + 24;
+        int avail = right - gridX - 10;
+        cols = Math.clamp(avail / (widePreview() ? 100 : 70), 2, 8);
+        cell = avail / cols;
+
+        cellH = Math.min(84, Math.max(47, cell + 7));
+        int usable = bottom - 29 - gridY;
+        rows = Math.max(1, Math.round(usable / (float) cellH));
+        cellH = Math.max(16, usable / rows);
+    }
+
+    private void refresh() {
+
+        groups = Arrays.stream(PvPItem.values()).filter(i -> StudioTab.of(i) == tab).toList();
+
+        var needle = query.toLowerCase(Locale.ROOT);
+
+        entries =
+                tab == StudioTab.KILLS
+                        ? List.of()
+                        : packs.getVariants(item).stream()
+                                .filter(
+                                        v ->
+                                                v.getPackName()
+                                                        .toLowerCase(Locale.ROOT)
+                                                        .contains(needle))
+                                .filter(
+                                        v ->
+                                                !S.favoritesOnly
+                                                        || S.favorites.contains(
+                                                                favorite(item, v.getPackName())))
+                                .toList();
+
+        firstRow = Math.clamp(firstRow, 0, maxRow());
+    }
+
+    private int navRows() {
+        return Math.max(1, (bottom - 30 - gridY) / 19);
+    }
+
+    private int maxRow() {
+        return Math.max(0, (entries.size() + cols - 1) / cols - rows);
+    }
+
+    private void openTab(StudioTab section) {
+        if (section == tab) return;
+        if (item != null) lastGroup.put(tab, item);
+        tab = section;
+        item = lastGroup.getOrDefault(tab, tab.first);
+        navOffset = 0;
+        firstRow = 0;
+        query = "";
+        status = "";
+        rebuildWidgets();
+        if (item != null)
+            navOffset =
+                    Math.clamp(
+                            groups.indexOf(item) - navRows() + 1,
+                            0,
+                            Math.max(0, groups.size() - navRows()));
+    }
+
+    private void selectGroup(PvPItem type) {
+        item = type;
+        layout();
+        firstRow = 0;
+        status = "";
+        refresh();
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor extractor, int mouseX, int mouseY, float delta) {
-        // Backdrop
-        extractor.fill(0, 0, this.width, this.height, COLOR_BACKDROP);
+    public void extractRenderState(GuiGraphicsExtractor g, int mx, int my, float dt) {
 
-        int winX = (this.width - WIN_WIDTH) / 2;
-        int winY = (this.height - WIN_HEIGHT) / 2;
+        int bg = new int[] {0x101a20, 0x211a25, 0x131e2a}[Math.floorMod(S.theme, 3)];
+        rounded(g, left - 1, top + 2, right + 1, bottom + 3, 10, 0x32101820);
+        rounded(g, left, top, right, bottom, 10, ((int) (196 * S.opacity) << 24) | bg);
+        if (S.background != 0)
+            StudioBackdrop.draw(
+                    g, left + nav + 2, toolbarY - 3, right - 2, bottom - 26, S.background);
+        g.fill(left + 10, toolbarY - 4, right - 10, toolbarY - 3, 0x405e7478);
+        if (nav > 0) g.fill(left + nav, toolbarY + 3, left + nav + 1, bottom - 28, 0x38596b68);
+        rounded(g, left + 11, top + 10, left + 14, top + 26, 1, ACCENT);
+        g.text(font, "Resource Builder", left + 20, top + 8, TEXT, false);
+        g.text(font, "Made by Zentrix", left + 20, top + 20, MUTED, false);
+        if (tab == StudioTab.KILLS) {
+            g.text(font, "On kill", gridX + 2, toolbarY + 6, TEXT, false);
+            g.text(font, "Only visible to you", gridX + 2, bottom - 18, MUTED, false);
+            super.extractRenderState(g, mx, my, dt);
+            return;
+        }
+        if (nav > 0) g.text(font, "Categories", left + 10, toolbarY + 5, MUTED, false);
+        rounded(g, search.getX() - 4, toolbarY, right - 8, toolbarY + 17, 5, 0x92203239);
+        for (int n = 0; nav > 0 && n < navRows() && n + navOffset < groups.size(); n++) {
 
-        // Clean Modern Rounded Window Frame
-        drawRoundedBox(extractor, winX, winY, WIN_WIDTH, WIN_HEIGHT, COLOR_WIN_BG, COLOR_WIN_BORDER);
+            PvPItem group = groups.get(n + navOffset);
+            int y = gridY + n * 19;
 
-        // Header Background
-        extractor.fill(winX + 2, winY + 2, winX + WIN_WIDTH - 2, winY + HEADER_HEIGHT, COLOR_WIN_HEADER);
-        extractor.fill(winX + 2, winY + HEADER_HEIGHT, winX + WIN_WIDTH - 2, winY + HEADER_HEIGHT + 1, COLOR_WIN_BORDER);
+            boolean selected = group == item;
 
-        // Header Title: Texture Studio (NO ugly gradient line!)
-        extractor.text(this.font, "Texture Studio", winX + 10, winY + 7, COLOR_TEXT_WHITE, true);
+            if (selected || (mx >= left + 4 && mx < left + nav && my >= y && my < y + 18))
+                rounded(
+                        g,
+                        left + 4,
+                        y,
+                        left + nav - 4,
+                        y + 18,
+                        4,
+                        selected ? 0xcd314b42 : 0x9c324246);
 
-        // Sidebar Background
-        int sidebarY = winY + HEADER_HEIGHT + 1;
-        int sidebarH = WIN_HEIGHT - HEADER_HEIGHT - 3;
-        extractor.fill(winX + 2, sidebarY, winX + SIDEBAR_WIDTH, winY + WIN_HEIGHT - 2, COLOR_SIDEBAR_BG);
-        extractor.fill(winX + SIDEBAR_WIDTH, sidebarY, winX + SIDEBAR_WIDTH + 1, winY + WIN_HEIGHT - 2, COLOR_WIN_BORDER);
+            if (selected) rounded(g, left + 5, y + 5, left + 7, y + 13, 1, ACCENT);
 
-        // Sidebar Category Items
-        PvPItem[] items = PvPItem.values();
-        int itemH = 17;
-        int maxVisible = (sidebarH - 6) / itemH;
+            if (minecraft.level != null) g.fakeItem(group.getItemStack(), left + 8, y + 1);
 
-        for (int i = 0; i < Math.min(items.length, maxVisible); i++) {
-            int idx = i + sidebarScroll;
-            if (idx >= items.length) break;
-
-            PvPItem item = items[idx];
-            int iy = sidebarY + 3 + i * itemH;
-            boolean isSel = (idx == activeItemIndex) && !showPresetView;
-            boolean isHov = mouseX >= winX + 2 && mouseX < winX + SIDEBAR_WIDTH - 2 && mouseY >= iy && mouseY < iy + itemH;
-
-            int bg = isSel ? COLOR_SIDEBAR_SELECTED : (isHov ? COLOR_SIDEBAR_ITEM : COLOR_SIDEBAR_BG);
-            drawRoundedBox(extractor, winX + 2, iy, SIDEBAR_WIDTH - 4, itemH - 1, bg, isSel ? COLOR_ACCENT : COLOR_WIN_BORDER);
-
-            String label = truncate((item.isSound() ? "♪ " : "") + item.getDisplayName(), 14);
-            int textColor = isSel ? COLOR_TEXT_WHITE : (isHov ? COLOR_CYAN : COLOR_TEXT_GRAY);
-            extractor.text(this.font, label, winX + 8, iy + 4, textColor, isSel);
+            g.text(
+                    font,
+                    font.plainSubstrByWidth(group.getDisplayName(), nav - 32),
+                    left + 28,
+                    y + 6,
+                    selected ? TEXT : MUTED,
+                    false);
         }
 
-        // Sidebar scrollbar indicator
-        if (items.length > maxVisible) {
-            int trackH = sidebarH - 8;
-            int barH = Math.max(12, trackH * maxVisible / items.length);
-            int barY = sidebarY + 4 + (trackH - barH) * sidebarScroll / (items.length - maxVisible);
-            int barX = winX + SIDEBAR_WIDTH - 3;
-            extractor.fill(barX, barY, barX + 2, barY + barH, 0xFF33456B);
+        g.text(
+                font,
+                font.plainSubstrByWidth(item.getDisplayName(), search.getX() - gridX - 4),
+                gridX,
+                toolbarY + 5,
+                TEXT,
+                false);
+
+        var active = packs.getActiveSelection(item);
+
+        String hovered = "";
+
+        for (int i = 0; i < rows * cols && i + firstRow * cols < entries.size(); i++) {
+
+            TextureVariant v = entries.get(i + firstRow * cols);
+            int x = gridX + (i % cols) * cell,
+                    y = gridY + (i / cols) * cellH,
+                    w = cell - 3,
+                    h = cellH - 3;
+
+            boolean chosen = active == v, hover = mx >= x && mx < x + w && my >= y && my < y + h;
+
+            if (chosen) {
+                rounded(g, x, y, x + w, y + h, 6, 0xff79b9a5);
+                rounded(g, x + 1, y + 1, x + w - 1, y + h - 1, 5, 0xff2b433e);
+            } else {
+                rounded(g, x, y, x + w, y + h, 6, hover ? 0xd0344448 : 0x9d233239);
+            }
+
+            if (hover) hovered = v.getPackName();
+
+            int dim = Math.max(1, Math.min(w - 8, h - 19));
+            int previewW = widePreview() ? Math.max(dim, Math.min(w - 6, dim * 2)) : dim;
+            int px = x + (w - previewW) / 2, py = y + 3;
+
+            boolean rendered = !item.isSound() && previews.draw(g, item, v, px, py, previewW, dim);
+
+            if (!rendered && minecraft.level != null)
+                g.fakeItem(item.getItemStack(), x + (w - 16) / 2, y + (h - 26) / 2);
+
+            if (S.favorites.contains(favorite(item, v.getPackName())))
+                g.text(font, "★", x + w - 10, y + 2, 0xffffcf78, false);
+
+            if (chosen) g.text(font, "✓", x + 3, y + 2, ACCENT, false);
+
+            String name = v.getPackName();
+            if (font.width(name) > w - 5)
+                name = font.plainSubstrByWidth(name, w - 5 - font.width("…")) + "…";
+
+            g.text(font, name, x + (w - font.width(name)) / 2, y + h - 11, TEXT, false);
         }
 
-        // Content Area
-        int contentX = winX + SIDEBAR_WIDTH + 10;
-        int contentY = winY + HEADER_HEIGHT + 4;
+        if (entries.isEmpty())
+            g.text(font, "No matching styles", gridX + 3, gridY + 12, MUTED, false);
 
-        if (!showPresetView) {
-            PvPItem currentItem = getCurrentItem();
-            extractor.text(this.font, currentItem.getDisplayName(), contentX, contentY + 4, COLOR_TEXT_WHITE, true);
+        if (maxRow() > 0) {
 
-            List<TextureVariant> variants = LivePackManager.getInstance().getVariants(currentItem);
-            int totalPages = Math.max(1, (variants.size() + SLOTS_PER_PAGE - 1) / SLOTS_PER_PAGE);
-            String pageStr = (currentPage + 1) + " / " + totalPages;
-            int rightAlign = winX + WIN_WIDTH - 10;
-            int pStrWidth = this.font.width(pageStr);
-            extractor.text(this.font, pageStr, rightAlign - 34 - pStrWidth, contentY + 5, COLOR_TEXT_GRAY, true);
+            int track = rows * cellH - 3,
+                    thumb = Math.max(8, (int) (track * rows / (float) (rows + maxRow())));
 
-            // Slot Grid
-            int gridStartY = contentY + 18;
-            int startIndex = currentPage * SLOTS_PER_PAGE;
-            int endIndex = Math.min(variants.size(), startIndex + SLOTS_PER_PAGE);
-            TextureVariant activeSel = LivePackManager.getInstance().getActiveSelection(currentItem);
-            TextureVariant hoveredVariant = null;
+            int sy = gridY + (track - thumb) * firstRow / maxRow();
 
-            for (int i = startIndex; i < endIndex; i++) {
-                TextureVariant v = variants.get(i);
-                int slotIdx = i - startIndex;
-                int col = slotIdx % GRID_COLS;
-                int row = slotIdx / GRID_COLS;
+            g.fill(right - 6, gridY, right - 4, gridY + track, 0xff2a3334);
+            g.fill(right - 6, sy, right - 4, sy + thumb, 0xff829e90);
+        }
 
-                int sx = contentX + col * (SLOT_SIZE + SLOT_SPACING);
-                int sy = gridStartY + row * (SLOT_SIZE + SLOT_SPACING);
+        String hint =
+                status.isEmpty()
+                        ? entries.size() + " Styles  ·  " + "Right click: favorite"
+                        : status;
 
-                boolean isHov = mouseX >= sx && mouseX < sx + SLOT_SIZE && mouseY >= sy && mouseY < sy + SLOT_SIZE;
-                boolean isSelected = activeSel != null && activeSel.getPackName().equals(v.getPackName());
+        if (!hovered.isBlank()) hint = hovered + "  ·  " + "Right click: favorite";
 
-                if (isHov) hoveredVariant = v;
+        int hintX = Math.max(gridX, left + 80);
+        g.text(
+                font,
+                font.plainSubstrByWidth(hint, right - hintX - 73),
+                hintX,
+                bottom - 18,
+                MUTED,
+                false);
 
-                int borderColor = isSelected ? COLOR_SLOT_SELECTED : (isHov ? COLOR_SLOT_HOVER : COLOR_SLOT_BORDER);
-                drawRoundedBox(extractor, sx, sy, SLOT_SIZE, SLOT_SIZE, COLOR_SLOT_BG, borderColor);
+        super.extractRenderState(g, mx, my, dt);
+    }
 
-                if (isSelected) {
-                    // Double border highlight
-                    extractor.fill(sx + 2, sy + 2, sx + SLOT_SIZE - 2, sy + 3, COLOR_SLOT_SELECTED);
-                    extractor.fill(sx + 2, sy + SLOT_SIZE - 3, sx + SLOT_SIZE - 2, sy + SLOT_SIZE - 2, COLOR_SLOT_SELECTED);
-                    extractor.fill(sx + 2, sy + 3, sx + 3, sy + SLOT_SIZE - 3, COLOR_SLOT_SELECTED);
-                    extractor.fill(sx + SLOT_SIZE - 3, sy + 3, sx + SLOT_SIZE - 2, sy + SLOT_SIZE - 3, COLOR_SLOT_SELECTED);
-                }
+    @Override
+    public boolean mouseClicked(MouseButtonEvent e, boolean twice) {
 
-                // Render Preview (NO hearts!)
-                int px = sx + (SLOT_SIZE - PREVIEW_SIZE) / 2;
-                int py = sy + (SLOT_SIZE - PREVIEW_SIZE) / 2;
+        if (super.mouseClicked(e, twice)) return true;
+        if (tab == StudioTab.KILLS) return false;
 
-                if (v.isDefault()) {
-                    extractor.fakeItem(currentItem.getItemStack(), sx + (SLOT_SIZE - 16) / 2, sy + (SLOT_SIZE - 16) / 2);
-                } else {
-                    Identifier texId = v.getTextureId();
-                    if (texId != null) {
-                        extractor.blit(texId, px, py, px + PREVIEW_SIZE, py + PREVIEW_SIZE, 0.0f, 1.0f, 0.0f, 1.0f);
-                    } else {
-                        extractor.fakeItem(currentItem.getItemStack(), sx + (SLOT_SIZE - 16) / 2, sy + (SLOT_SIZE - 16) / 2);
+        double x = e.x(), y = e.y();
+
+        if (e.button() == 0
+                && x >= left + 4
+                && x < left + nav
+                && y >= gridY
+                && y < gridY + navRows() * 19) {
+
+            int i = navOffset + (int) (y - gridY) / 19;
+            if (i < groups.size()) selectGroup(groups.get(i));
+            return true;
+        }
+
+        if (x >= gridX && x < gridX + cols * cell && y >= gridY && y < gridY + rows * cellH) {
+
+            int idx = (firstRow + (int) (y - gridY) / cellH) * cols + (int) (x - gridX) / cell;
+
+            if (idx >= entries.size()) return false;
+
+            var v = entries.get(idx);
+
+            if (e.button() == 1) {
+
+                String key = favorite(item, v.getPackName());
+                if (!S.favorites.remove(key)) S.favorites.add(key);
+
+                S.save();
+                refresh();
+                return true;
+            }
+
+            if (e.button() == 0) {
+
+                try {
+
+                    if (packs.getActiveSelection(item) != v) packs.selectVariant(item, v, true);
+
+                    if (item.isSound()) {
+
+                        de.resourcebuilder.ResourceBuilderMod.previewSound(
+                                LivePackManager.soundEvents(item).getFirst());
                     }
+
+                    status = "Active · " + v.getPackName();
+
+                } catch (RuntimeException error) {
+                    status = "Could not save";
+                    de.resourcebuilder.ResourceBuilderMod.LOGGER.error(status, error);
                 }
 
-                if (currentItem.isSound()) {
-                    extractor.text(this.font, "♪", sx + SLOT_SIZE - 9, sy + 3, COLOR_CYAN, true);
-                }
-            }
-
-            int statusY = winY + WIN_HEIGHT - 35;
-            extractor.text(this.font, statusMessage, contentX, statusY, COLOR_SUCCESS, true);
-
-            super.extractRenderState(extractor, mouseX, mouseY, delta);
-
-            // Tooltip
-            if (hoveredVariant != null && !showSavePresetDialog) {
-                String tip = hoveredVariant.isDefault() ? "Standard (Default Textur)" : hoveredVariant.getPackName();
-                int tw = this.font.width(tip) + 8;
-                int tx = Math.min(mouseX + 8, this.width - tw - 4);
-                int ty = mouseY - 14;
-                drawRoundedBox(extractor, tx - 2, ty - 2, tw + 4, 15, 0xF2090E18, COLOR_CYAN);
-                extractor.text(this.font, tip, tx + 2, ty + 1, COLOR_TEXT_WHITE, true);
-            }
-
-        } else {
-            extractor.text(this.font, "Gespeicherte Presets", contentX, contentY + 4, COLOR_TEXT_WHITE, true);
-            super.extractRenderState(extractor, mouseX, mouseY, delta);
-        }
-
-        if (showSavePresetDialog) {
-            renderModalBox(extractor, "Preset speichern", 190, 75);
-        }
-    }
-
-    private void drawRoundedBox(GuiGraphicsExtractor extractor, int x, int y, int w, int h, int bg, int border) {
-        extractor.fill(x + 1, y, x + w - 1, y + h, bg);
-        extractor.fill(x, y + 1, x + 1, y + h - 1, bg);
-        extractor.fill(x + w - 1, y + 1, x + w, y + h - 1, bg);
-
-        extractor.fill(x + 1, y, x + w - 1, y + 1, border);
-        extractor.fill(x + 1, y + h - 1, x + w - 1, y + h, border);
-        extractor.fill(x, y + 1, x + 1, y + h - 1, border);
-        extractor.fill(x + w - 1, y + 1, x + w, y + h - 1, border);
-    }
-
-    private void renderModalBox(GuiGraphicsExtractor extractor, String title, int w, int h) {
-        int mx = (this.width - w) / 2;
-        int my = (this.height - h) / 2;
-
-        extractor.fill(0, 0, this.width, this.height, 0xAA000000);
-        drawRoundedBox(extractor, mx, my, w, h, 0xFF0F172A, COLOR_ACCENT);
-        extractor.text(this.font, title, mx + 10, my + 8, COLOR_TEXT_WHITE, true);
-        super.extractRenderState(extractor, 0, 0, 0);
-    }
-
-    @Override
-    public boolean mouseClicked(MouseButtonEvent event, boolean isDouble) {
-        double mouseX = event.x();
-        double mouseY = event.y();
-
-        int winX = (this.width - WIN_WIDTH) / 2;
-        int winY = (this.height - WIN_HEIGHT) / 2;
-
-        int sidebarY = winY + HEADER_HEIGHT;
-        if (mouseX >= winX && mouseX < winX + SIDEBAR_WIDTH && mouseY >= sidebarY && mouseY < winY + WIN_HEIGHT) {
-            int itemH = 17;
-            int clickedIdx = (int) (mouseY - (sidebarY + 3)) / itemH + sidebarScroll;
-            if (clickedIdx >= 0 && clickedIdx < PvPItem.values().length) {
-                activeItemIndex = clickedIdx;
-                currentPage = 0;
-                showPresetView = false;
-                rebuildUI();
                 return true;
             }
         }
 
-        if (!showPresetView) {
-            int contentX = winX + SIDEBAR_WIDTH + 10;
-            int contentY = winY + HEADER_HEIGHT + 4;
-            int gridStartY = contentY + 18;
-
-            PvPItem currentItem = getCurrentItem();
-            List<TextureVariant> variants = LivePackManager.getInstance().getVariants(currentItem);
-            int startIndex = currentPage * SLOTS_PER_PAGE;
-            int endIndex = Math.min(variants.size(), startIndex + SLOTS_PER_PAGE);
-
-            for (int i = startIndex; i < endIndex; i++) {
-                int slotIdx = i - startIndex;
-                int col = slotIdx % GRID_COLS;
-                int row = slotIdx / GRID_COLS;
-
-                int sx = contentX + col * (SLOT_SIZE + SLOT_SPACING);
-                int sy = gridStartY + row * (SLOT_SIZE + SLOT_SPACING);
-
-                if (mouseX >= sx && mouseX < sx + SLOT_SIZE && mouseY >= sy && mouseY < sy + SLOT_SIZE) {
-                    TextureVariant clicked = variants.get(i);
-                    LivePackManager.getInstance().selectVariant(currentItem, clicked, true);
-                    statusMessage = "Angewendet. Dein Mix ist gespeichert.";
-
-                    if (currentItem.isSound() && this.minecraft != null) {
-                        switch (currentItem) {
-                            case SOUND_MACE -> this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.MACE_SMASH_GROUND, 1.0f));
-                            case SOUND_CRYSTAL -> this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.GENERIC_EXPLODE, 1.0f));
-                            case SOUND_SWORD -> this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.PLAYER_ATTACK_STRONG, 1.0f));
-                            case SOUND_EAT -> this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.PLAYER_BURP, 1.0f));
-                            case SOUND_TOTEM -> this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.TOTEM_USE, 1.0f));
-                            default -> {}
-                        }
-                    }
-
-                    return true;
-                }
-            }
-        }
-
-        return super.mouseClicked(event, isDouble);
+        return false;
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
-        int winX = (this.width - WIN_WIDTH) / 2;
-        int winY = (this.height - WIN_HEIGHT) / 2;
+    public boolean mouseScrolled(double x, double y, double horizontal, double vertical) {
 
-        if (mouseX >= winX && mouseX < winX + SIDEBAR_WIDTH) {
-            sidebarScroll -= (int) Math.signum(verticalAmount);
-            int maxScroll = Math.max(0, PvPItem.values().length - ((WIN_HEIGHT - HEADER_HEIGHT - 6) / 17));
-            if (sidebarScroll < 0) sidebarScroll = 0;
-            if (sidebarScroll > maxScroll) sidebarScroll = maxScroll;
-            return true;
-        }
+        int step = (int) Math.signum(vertical);
 
-        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+        if (x < left + nav)
+            navOffset = Math.clamp(navOffset - step, 0, Math.max(0, groups.size() - navRows()));
+        else firstRow = Math.clamp(firstRow - step, 0, maxRow());
+        return true;
     }
 
     @Override
     public boolean keyPressed(KeyEvent event) {
-        if (event.key() == GLFW.GLFW_KEY_ESCAPE) {
-            if (showSavePresetDialog) {
-                showSavePresetDialog = false;
-                rebuildUI();
-                return true;
-            }
-            if (showPresetView) {
-                showPresetView = false;
-                rebuildUI();
-                return true;
-            }
+
+        int key = event.key();
+        if (groups.size() > 1
+                && search != null
+                && !search.isFocused()
+                && (key == GLFW.GLFW_KEY_LEFT || key == GLFW.GLFW_KEY_RIGHT)) {
+
+            int i =
+                    Math.floorMod(
+                            groups.indexOf(item) + (key == GLFW.GLFW_KEY_LEFT ? -1 : 1),
+                            groups.size());
+            selectGroup(groups.get(i));
+
+            navOffset = Math.clamp(i - navRows() / 2, 0, Math.max(0, groups.size() - navRows()));
+            return true;
         }
         return super.keyPressed(event);
     }
 
     @Override
-    public void onClose() {
-        if (this.minecraft != null) {
-            this.minecraft.setScreenAndShow(null);
-        }
+    public void removed() {
+        previews.close();
+        super.removed();
     }
 
-    private java.util.Map<PvPItem, String> getCurrentSelectionsMap() {
-        java.util.Map<PvPItem, String> map = new java.util.EnumMap<>(PvPItem.class);
-        for (PvPItem item : PvPItem.values()) {
-            TextureVariant v = LivePackManager.getInstance().getActiveSelection(item);
-            if (v != null && !v.isDefault()) {
-                map.put(item, v.getPackName());
-            }
-        }
-        return map;
-    }
-
-    private String truncate(String s, int max) {
-        if (s.length() <= max) return s;
-        return s.substring(0, max - 2) + "..";
+    @Override
+    public boolean isPauseScreen() {
+        return S.pauseMenu;
     }
 }

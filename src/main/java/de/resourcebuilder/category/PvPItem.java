@@ -3,6 +3,8 @@ package de.resourcebuilder.category;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
+import java.util.Set;
+
 public enum PvPItem {
     CRYSTALS("Crystals", "item/end_crystal"),
     RESPAWN_ANCHOR("Respawn Anchor", "block/respawn_anchor_top_off"),
@@ -18,7 +20,7 @@ public enum PvPItem {
     FIRE("Fire", "block/fire_0"),
     WIND_CHARGE("Wind Charge", "item/wind_charge"),
     FIREWORK_ROCKET("Rockets", "item/firework_rocket"),
-    SHIELD("Shield", "item/shield"),
+    SHIELD("Shield", "entity/shield/shield_base_nopattern"),
     DIAMOND_SWORD("Diamond Sword", "item/diamond_sword"),
     NETHERITE_SWORD("Netherite Sword", "item/netherite_sword"),
     MACE("Mace", "item/mace"),
@@ -36,11 +38,33 @@ public enum PvPItem {
     CRIT_PARTICLES("Crit Particles", "particle/critical_hit"),
     CRYSTAL_EXPLOSION("Crystal Explosion", "particle/explosion_0"),
     TOTEM_POPS("Totem Pop", "particle/glitter_0"),
+    BLOCKS("Grass Block", "block/grass_block_top"),
+    XP("XP Bottle", "item/experience_bottle"),
+    SHOVEL("Diamond Shovel", "item/diamond_shovel"),
+    SPEAR("Spear", "item/netherite_spear"),
+    TRIDENT("Trident", "item/trident"),
+    HUD("Hotbar", "gui/sprites/hud/hotbar"),
+    HEARTS("Hearts", "gui/sprites/hud/heart/full"),
+    HUNGER("Hunger", "gui/sprites/hud/food_full"),
+    XP_BAR("XP Bar", "gui/sprites/hud/experience_bar_progress"),
+    CROSSHAIR("Crosshair", "gui/sprites/hud/crosshair"),
+    FONT("Font", "font/ascii"),
+    SKY("Sky", "environment/end_sky"),
+    SOUND_PEARL("Pearl Throw", "entity.ender_pearl.throw", true),
+    SOUND_XP("XP Bottle", "entity.experience_bottle.throw", true),
+    SOUND_BOW("Bow Shot", "entity.arrow.shoot", true),
+    SOUND_SHIELD("Shield Block", "item.shield.block", true),
+    SOUND_ANCHOR("Anchor Charge", "block.respawn_anchor.charge", true),
+    SOUND_ARMOR("Equip Armor", "item.armor.equip_diamond", true),
+    SOUND_HURT("Player Hurt", "entity.player.hurt", true),
     SOUND_MACE("Mace Hits Sound", "sounds/item/mace", true),
     SOUND_CRYSTAL("Crystal Blow Sound", "sounds/random/explode", true),
     SOUND_SWORD("Sword Hits Sound", "sounds/entity/player/attack", true),
-    SOUND_EAT("Gapple Essen Sound", "sounds/random/eat", true),
+    SOUND_EAT("Golden Apple Eating Sound", "sounds/random/eat", true),
     SOUND_TOTEM("Totem Pop Sound", "sounds/item/totem", true);
+
+    public static final Set<String> RETIRED =
+            Set.of("BOOK", "CHEST", "FRAME", "IRON_ARMOR", "GOLD_ARMOR");
 
     private final String displayName;
     private final String primaryTexturePath;
@@ -102,6 +126,25 @@ public enum PvPItem {
             case CRIT_PARTICLES -> Items.NETHERITE_SWORD.getDefaultInstance();
             case CRYSTAL_EXPLOSION -> Items.TNT.getDefaultInstance();
             case TOTEM_POPS -> Items.TOTEM_OF_UNDYING.getDefaultInstance();
+            case BLOCKS -> Items.GRASS_BLOCK.getDefaultInstance();
+            case XP -> Items.EXPERIENCE_BOTTLE.getDefaultInstance();
+            case SHOVEL -> Items.DIAMOND_SHOVEL.getDefaultInstance();
+            case SPEAR -> Items.NETHERITE_SPEAR.getDefaultInstance();
+            case TRIDENT -> Items.TRIDENT.getDefaultInstance();
+            case HUD -> Items.BUNDLE.getDefaultInstance();
+            case HEARTS -> Items.GLISTERING_MELON_SLICE.getDefaultInstance();
+            case HUNGER -> Items.COOKED_CHICKEN.getDefaultInstance();
+            case XP_BAR -> Items.EXPERIENCE_BOTTLE.getDefaultInstance();
+            case CROSSHAIR -> Items.TARGET.getDefaultInstance();
+            case FONT -> Items.NAME_TAG.getDefaultInstance();
+            case SKY -> Items.CLOCK.getDefaultInstance();
+            case SOUND_PEARL -> Items.ENDER_PEARL.getDefaultInstance();
+            case SOUND_XP -> Items.EXPERIENCE_BOTTLE.getDefaultInstance();
+            case SOUND_BOW -> Items.BOW.getDefaultInstance();
+            case SOUND_SHIELD -> Items.SHIELD.getDefaultInstance();
+            case SOUND_ANCHOR -> Items.RESPAWN_ANCHOR.getDefaultInstance();
+            case SOUND_ARMOR -> Items.DIAMOND_CHESTPLATE.getDefaultInstance();
+            case SOUND_HURT -> Items.REDSTONE.getDefaultInstance();
             case SOUND_MACE -> Items.MACE.getDefaultInstance();
             case SOUND_CRYSTAL -> Items.END_CRYSTAL.getDefaultInstance();
             case SOUND_SWORD -> Items.DIAMOND_SWORD.getDefaultInstance();

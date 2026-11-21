@@ -19,6 +19,7 @@ public class Preset {
     public Preset(String name, Map<String, String> selections) {
         this.name = name;
         this.selections = new HashMap<>(selections);
+        removeRetiredSelections();
     }
 
     public String getName() {
@@ -26,7 +27,7 @@ public class Preset {
     }
 
     public Map<String, String> getSelections() {
-        return Collections.unmodifiableMap(selections);
+        return selections == null ? Map.of() : Collections.unmodifiableMap(selections);
     }
 
     public void setSelection(PvPItem item, String packName) {
@@ -41,7 +42,11 @@ public class Preset {
         return selections.get(item.name());
     }
 
+    boolean removeRetiredSelections() {
+        return selections != null && selections.keySet().removeAll(PvPItem.RETIRED);
+    }
+
     public int size() {
-        return selections.size();
+        return getSelections().size();
     }
 }

@@ -1,49 +1,22 @@
-# ResourceBuilder
+# Resource Builder Studio
 
-> **ResourceBuilder** is a high-performance Minecraft Fabric mod for dynamic, on-the-fly texture pack mixing and custom sound selection without restarting the client.
+A client-side resource pack builder for Minecraft Java 26.2, Fabric Loader 0.20.1 or newer, Fabric API for 26.2, and Java 25. Built on ResourceBuilder 1.0.14 with original styles inspired by the reference video.
 
-[![Minecraft](https://img.shields.io/badge/Minecraft-26.2%20%7C%201.21.11-brightgreen.svg)](https://fabricmc.net/)
-[![Fabric](https://img.shields.io/badge/ModLoader-Fabric-blue.svg)](https://fabricmc.net/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+## Installation and controls
 
----
+Place the mod JAR and Fabric API in your instance's `mods` folder. Replace any older Resource Builder JAR. Open the studio in a world with **R** or **/rb**. Use Minecraft's key bindings to change the studio and zoom keys.
 
-## Features
+- Choose **Items** or **Armor** to see placed crystals and equipped armor. Use **Settings → Controls** to toggle rotating previews.
+- **Hotbar**, **Sky**, **Font**, and **Crosshair** each have a gallery. **Vitals** lets you pick different styles for hearts, hunger, and the experience bar.
+- **Effects** contains texture styles for particles and fire. **Kill Effects** lets you turn on a cosmetic lightning bolt, an expanding ring, ascending souls, or a golden spark burst at the defeated entity. The effect is visible to you and starts turned off. Each finisher has a local sound, controlled by the Finisher sound toggle.
+- Singleplayer uses Minecraft's kill credit. On multiplayer servers, the client looks for damage attributed to you immediately before the death event. A server that omits one of these updates can cause the effect to be skipped.
+- Left-click a texture to apply it. Right-click to add or remove a favorite. Scroll over the categories or gallery to browse.
+- The studio also reads textures and sounds from ZIPs and folders in `resourcepacks`. Restart the game after adding a pack.
+- Open **Profiles** to save or load a combination, reset the active mix, or export the textures and sounds to a ZIP under `resourcebuilder-exports`. Kill effects and other visual settings are stored locally.
+- Adjust the studio's theme, size, and opacity in **Settings → Window**. The blurred background shows the live game. Drop a PNG or JPG on the Window page to use your own background.
 
-- **Live Dynamic Mixing:** Mix textures (Swords, Crystals, Totems, Armor, Fire, Cobwebs, Particles, etc.) from any of your installed resource packs into a single active live pack.
-- **Obsidian Dark Studio UI:** Modern dark slate UI with smooth pagination, category sidebar, and real-time live preview cards.
-- **Sound Selector & Preview:** Customize hit sounds, crystal explosions, mace smashes, totem pops, and eat sounds with in-game audio previews.
-- **Auto Animation Fixing:** Automatically fixes static and animated low-fire textures, particle layers, and armor textures to prevent missing textures.
-- **Instant Hot-Reload:** Changes apply immediately in-game without restarting Minecraft.
-- **Preset System:** Save, export, and load your favorite PvP texture combinations with 1 click.
-- **Full Reset:** Instantly revert all textures back to clean vanilla defaults.
+## Building and testing
 
----
+Run `gradlew.bat build` on Windows or `./gradlew build` with JDK 25. The mod JAR is written to `build/libs`.
 
-## Commands & Keybinds
-
-| Action | Command / Key | Description |
-|---|---|---|
-| Open Studio | `/resource` or `/rb` | Opens the ResourceBuilder Studio UI |
-| Keybind | Configurable | Can be bound in Options -> Controls -> Key Binds |
-
----
-
-## Building from Source
-
-### Prerequisites
-- **JDK 21+**
-- Git
-
-### Build Instructions
-```bash
-git clone https://github.com/Z3ntrix603/ResourceBuilder.git
-cd ResourceBuilder
-./gradlew build
-```
-The compiled `.jar` file will be located in `build/libs/`.
-
----
-
-## License
-This project is licensed under the [MIT License](LICENSE).
+Run `gradlew.bat runSmoke` to launch an isolated client with a disposable test world. The smoke checks cover HUD selections, loaded resources, export, gallery navigation, and kill effects. The client writes screenshots and a `PASSED` or `FAILED` marker in `build/studio-runtime`.

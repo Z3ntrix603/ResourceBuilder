@@ -1,8 +1,9 @@
 package de.resourcebuilder;
 
-import de.resourcebuilder.gui.TextureStudioScreen;
-import de.resourcebuilder.pack.LivePackManager;
 import com.mojang.blaze3d.platform.InputConstants;
+
+import de.resourcebuilder.gui.TextureStudioScreen;
+
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
@@ -10,7 +11,10 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.resources.Identifier;
+import net.minecraft.sounds.SoundEvent;
+
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,11 +29,46 @@ public class ResourceBuilderMod implements ClientModInitializer {
     public static final String MOD_ID = "resourcebuilder";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-    public static final KeyMapping.Category CATEGORY = KeyMapping.Category.register(
-            Identifier.fromNamespaceAndPath(MOD_ID, "main")
-    );
+    public static final KeyMapping.Category CATEGORY =
+            KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MOD_ID, "main"));
 
-    private static KeyMapping openGuiKey;
+    private static KeyMapping openGuiKey, zoomKey;
+    private static boolean toggled, zoomActive, cameraOverride, previousCamera;
+    public static double zoomFactor = 1;
+
+    public static boolean isZoomActive() {
+        return zoomActive;
+    }
+
+    private static void updateZoom(Minecraft client) {
+        var settings = StudioSettings.S;
+        while (zoomKey.consumeClick()) if (settings.zoomToggle) toggled = !toggled;
+        if (!settings.zoomToggle || client.level == null || client.gui.screen() != null)
+            toggled = false;
+        zoomActive =
+                client.level != null
+                        && client.gui.screen() == null
+                        && (settings.zoomToggle ? toggled : zoomKey.isDown());
+        double target = zoomActive ? settings.zoom : 1;
+        zoomFactor = settings.smoothZoom ? zoomFactor + (target - zoomFactor) * .45 : target;
+        if (Math.abs(target - zoomFactor) < .01) zoomFactor = target;
+        boolean cinematic = zoomActive && settings.cinematic;
+        if (cinematic && !cameraOverride) {
+            previousCamera = client.options.smoothCamera;
+            client.options.smoothCamera = true;
+        }
+        if (!cinematic && cameraOverride) client.options.smoothCamera = previousCamera;
+        cameraOverride = cinematic;
+    }
+
+    private static SoundEvent previewSound;
+    private static long previewAfter;
+
+    public static void previewSound(String event) {
+        previewSound = SoundEvent.createVariableRangeEvent(Identifier.withDefaultNamespace(event));
+        previewAfter = System.nanoTime() + 350_000_000L;
+    }
+
     private static int hotkeyCode = GLFW.GLFW_KEY_R;
     private static final Path HOTKEY_CONFIG = Paths.get("config", "resourcebuilder", "hotkey.txt");
 
@@ -38,52 +77,100 @@ public class ResourceBuilderMod implements ClientModInitializer {
         LOGGER.info("Resource Builder (Texture Studio) initializing...");
 
         loadHotkeyCode();
+        net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents.CLIENT_STARTED
+                .register(
+                        client ->
+                                de.resourcebuilder.pack.LivePackManager.getInstance()
+                                        .migrateRetiredSelections());
 
-        LivePackManager.getInstance().initPackFolder();
-        LivePackManager.getInstance().scanAllPacks();
+        zoomKey =
+                KeyMappingHelper.registerKeyMapping(
+                        new KeyMapping(
+                                "key.resourcebuilder.zoom",
+                                InputConstants.Type.KEYSYM,
+                                GLFW.GLFW_KEY_C,
+                                CATEGORY));
 
-        openGuiKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
-                "key.resourcebuilder.open",
-                InputConstants.Type.KEYSYM,
-                hotkeyCode,
-                CATEGORY
-        ));
+        openGuiKey =
+                KeyMappingHelper.registerKeyMapping(
+                        new KeyMapping(
+                                "key.resourcebuilder.open",
+                                InputConstants.Type.KEYSYM,
+                                hotkeyCode,
+                                CATEGORY));
 
-        ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            while (openGuiKey.consumeClick()) {
-                if (client.gui.screen() == null) {
-                    client.setScreenAndShow(new TextureStudioScreen());
-                }
-            }
-        });
+        ClientTickEvents.END_CLIENT_TICK.register(
+                client -> {
+                    updateZoom(client);
+                    if (previewSound != null
+                            && System.nanoTime() >= previewAfter
+                            && client.gui.overlay() == null) {
+                        client.getSoundManager().play(SimpleSoundInstance.forUI(previewSound, 1));
+                        previewSound = null;
+                    }
+                    while (openGuiKey.consumeClick()) {
+                        if (client.gui.screen() == null) {
+                            client.setScreenAndShow(new TextureStudioScreen());
+                        }
+                    }
+                });
 
         // Register Chat Commands: /rb, /textures, /resourcebuilder, /studio
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
-            dispatcher.register(ClientCommands.literal("rb").executes(ctx -> {
-                Minecraft.getInstance().execute(() -> {
-                    Minecraft.getInstance().setScreenAndShow(new TextureStudioScreen());
+        ClientCommandRegistrationCallback.EVENT.register(
+                (dispatcher, registryAccess) -> {
+                    dispatcher.register(
+                            ClientCommands.literal("rb")
+                                    .executes(
+                                            ctx -> {
+                                                Minecraft.getInstance()
+                                                        .execute(
+                                                                () -> {
+                                                                    Minecraft.getInstance()
+                                                                            .setScreenAndShow(
+                                                                                    new TextureStudioScreen());
+                                                                });
+                                                return 1;
+                                            }));
+                    dispatcher.register(
+                            ClientCommands.literal("textures")
+                                    .executes(
+                                            ctx -> {
+                                                Minecraft.getInstance()
+                                                        .execute(
+                                                                () -> {
+                                                                    Minecraft.getInstance()
+                                                                            .setScreenAndShow(
+                                                                                    new TextureStudioScreen());
+                                                                });
+                                                return 1;
+                                            }));
+                    dispatcher.register(
+                            ClientCommands.literal("resourcebuilder")
+                                    .executes(
+                                            ctx -> {
+                                                Minecraft.getInstance()
+                                                        .execute(
+                                                                () -> {
+                                                                    Minecraft.getInstance()
+                                                                            .setScreenAndShow(
+                                                                                    new TextureStudioScreen());
+                                                                });
+                                                return 1;
+                                            }));
+                    dispatcher.register(
+                            ClientCommands.literal("studio")
+                                    .executes(
+                                            ctx -> {
+                                                Minecraft.getInstance()
+                                                        .execute(
+                                                                () -> {
+                                                                    Minecraft.getInstance()
+                                                                            .setScreenAndShow(
+                                                                                    new TextureStudioScreen());
+                                                                });
+                                                return 1;
+                                            }));
                 });
-                return 1;
-            }));
-            dispatcher.register(ClientCommands.literal("textures").executes(ctx -> {
-                Minecraft.getInstance().execute(() -> {
-                    Minecraft.getInstance().setScreenAndShow(new TextureStudioScreen());
-                });
-                return 1;
-            }));
-            dispatcher.register(ClientCommands.literal("resourcebuilder").executes(ctx -> {
-                Minecraft.getInstance().execute(() -> {
-                    Minecraft.getInstance().setScreenAndShow(new TextureStudioScreen());
-                });
-                return 1;
-            }));
-            dispatcher.register(ClientCommands.literal("studio").executes(ctx -> {
-                Minecraft.getInstance().execute(() -> {
-                    Minecraft.getInstance().setScreenAndShow(new TextureStudioScreen());
-                });
-                return 1;
-            }));
-        });
 
         LOGGER.info("Resource Builder initialized successfully.");
     }
@@ -101,7 +188,8 @@ public class ResourceBuilderMod implements ClientModInitializer {
         try {
             Files.createDirectories(HOTKEY_CONFIG.getParent());
             Files.writeString(HOTKEY_CONFIG, String.valueOf(key));
-        } catch (IOException ignored) {}
+        } catch (IOException ignored) {
+        }
     }
 
     private static void loadHotkeyCode() {
@@ -109,7 +197,8 @@ public class ResourceBuilderMod implements ClientModInitializer {
             try {
                 String str = Files.readString(HOTKEY_CONFIG).trim();
                 hotkeyCode = Integer.parseInt(str);
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
         }
     }
 }
