@@ -1,7 +1,7 @@
 package de.resourcebuilder.gui;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
 
@@ -23,7 +23,7 @@ class StudioButton extends Button {
     }
 
     @Override
-    protected void extractContents(GuiGraphicsExtractor g, int mx, int my, float dt) {
+    protected void renderContents(GuiGraphics g, int mx, int my, float dt) {
         int x = getX(), y = getY(), w = getWidth(), h = getHeight();
         boolean selected = Boolean.TRUE.equals(selectedTab);
         if (isHoveredOrFocused() || selected || selectedTab == null) {
@@ -37,7 +37,7 @@ class StudioButton extends Button {
                 font.plainSubstrByWidth(getMessage().getString(), Math.max(1, w - iconWidth - 4));
         int start = x + (w - font.width(label) - iconWidth) / 2;
         if (showHotbar) {
-            g.outline(start, y + (h - 6) / 2, 11, 6, TextureStudioScreen.MUTED);
+            g.renderOutline(start, y + (h - 6) / 2, 11, 6, TextureStudioScreen.MUTED);
             for (int i = 1; i <= 2; i++)
                 g.fill(
                         start + 1 + i * 3,
@@ -46,7 +46,7 @@ class StudioButton extends Button {
                         y + (h - 6) / 2 + 5,
                         TextureStudioScreen.MUTED);
         }
-        g.text(
+        g.drawString(
                 font,
                 label,
                 start + iconWidth,

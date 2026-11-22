@@ -3,7 +3,7 @@ package de.resourcebuilder.gui;
 import com.mojang.blaze3d.platform.NativeImage;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.Identifier;
 
@@ -37,7 +37,7 @@ final class StudioBackdrop {
         }
     }
 
-    static void draw(GuiGraphicsExtractor g, int x, int y, int right, int bottom, int which) {
+    static void draw(GuiGraphics g, int x, int y, int right, int bottom, int which) {
         Identifier id;
         if (which == 4) {
             if (!Files.isRegularFile(CUSTOM)) return;

@@ -8,7 +8,7 @@ import de.resourcebuilder.category.PvPItem;
 import de.resourcebuilder.pack.TextureVariant;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.Identifier;
 
@@ -44,7 +44,7 @@ final class PreviewCache implements AutoCloseable {
     }
 
     boolean draw(
-            GuiGraphicsExtractor g,
+            GuiGraphics g,
             PvPItem item,
             TextureVariant variant,
             int x,
@@ -92,7 +92,7 @@ final class PreviewCache implements AutoCloseable {
     }
 
     void portrait(
-            GuiGraphicsExtractor g,
+            GuiGraphics g,
             PvPItem item,
             TextureVariant variant,
             int x,

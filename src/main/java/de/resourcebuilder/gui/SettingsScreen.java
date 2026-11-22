@@ -2,7 +2,7 @@ package de.resourcebuilder.gui;
 
 import static de.resourcebuilder.StudioSettings.S;
 
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.*;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.options.controls.KeyBindsScreen;
@@ -162,9 +162,7 @@ final class SettingsScreen extends StudioScreen {
             case 13 -> {
                 action(
                         "Open key bindings",
-                        () ->
-                                minecraft.setScreenAndShow(
-                                        new KeyBindsScreen(this, minecraft.options)));
+                        () -> minecraft.setScreen(new KeyBindsScreen(this, minecraft.options)));
                 toggle("Rotate 3D previews", S.animations, () -> S.animations = !S.animations);
                 toggle("Click sounds", S.clickSounds, () -> S.clickSounds = !S.clickSounds);
                 toggle("Pause singleplayer", S.pauseMenu, () -> S.pauseMenu = !S.pauseMenu);
@@ -337,7 +335,7 @@ final class SettingsScreen extends StudioScreen {
                         () -> {
                             fn.run();
                             S.save();
-                            if (minecraft.gui.screen() == this) rebuildWidgets();
+                            if (minecraft.screen == this) rebuildWidgets();
                         }));
         y += 22;
     }
@@ -390,14 +388,14 @@ final class SettingsScreen extends StudioScreen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor g, int mx, int my, float dt) {
+    public void render(GuiGraphics g, int mx, int my, float dt) {
         rounded(g, l, 5, r, height - 5, 8, 0xec192227);
         rounded(g, l + 3, 33, l + nav - 2, height - 8, 5, 0x60101920);
-        g.text(font, "Settings", l + 70, 16, TextureStudioScreen.TEXT, false);
-        g.text(font, PAGES[page], x, 40, TextureStudioScreen.ACCENT, false);
-        super.extractRenderState(g, mx, my, dt);
+        g.drawString(font, "Settings", l + 70, 16, TextureStudioScreen.TEXT, false);
+        g.drawString(font, PAGES[page], x, 40, TextureStudioScreen.ACCENT, false);
+        super.render(g, mx, my, dt);
         if (page == 14)
-            g.text(
+            g.drawString(
                     font,
                     feedback.isEmpty() ? "Drop a background image here" : feedback,
                     x,
@@ -439,6 +437,6 @@ final class SettingsScreen extends StudioScreen {
 
     @Override
     public void onClose() {
-        minecraft.setScreenAndShow(back);
+        minecraft.setScreen(back);
     }
 }

@@ -20,7 +20,7 @@ public class StudioSmoke implements ClientModInitializer {
     public void onInitializeClient() {
         ClientTickEvents.END_CLIENT_TICK.register(
                 mc -> {
-                    if (++ticks < 100 || ticks % 24 != 0 || mc.gui.overlay() != null) return;
+                    if (++ticks < 100 || ticks % 24 != 0 || mc.getOverlay() != null) return;
                     try {
                         if (!launched) {
                             launched = true;
@@ -32,21 +32,25 @@ public class StudioSmoke implements ClientModInitializer {
                                             new net.minecraft.world.level.LevelSettings(
                                                     "StudioTest",
                                                     net.minecraft.world.level.GameType.CREATIVE,
-                                                    net.minecraft.world.level.LevelSettings
-                                                            .DifficultySettings.DEFAULT,
+                                                    false,
+                                                    net.minecraft.world.Difficulty.NORMAL,
                                                     true,
+                                                    new net.minecraft.world.level.gamerules
+                                                            .GameRules(
+                                                            net.minecraft.world.flag.FeatureFlags
+                                                                    .DEFAULT_FLAGS),
                                                     net.minecraft.world.level.WorldDataConfiguration
                                                             .DEFAULT),
                                             new net.minecraft.world.level.levelgen.WorldOptions(
                                                     42, false, false),
                                             net.minecraft.world.level.levelgen.presets.WorldPresets
                                                     ::createNormalWorldDimensions,
-                                            mc.gui.screen());
+                                            mc.screen);
                             return;
                         }
                         if (mc.level == null
                                 || mc.player == null
-                                || (stage == 0 && mc.gui.screen() != null)) return;
+                                || (stage == 0 && mc.screen != null)) return;
                         var pm = LivePackManager.getInstance();
                         switch (stage++) {
                             case 0 -> {
@@ -56,7 +60,7 @@ public class StudioSmoke implements ClientModInitializer {
                                 mc.player.connection.sendCommand("rb");
                             }
                             case 1 -> {
-                                if (!(mc.gui.screen() instanceof TextureStudioScreen studio))
+                                if (!(mc.screen instanceof TextureStudioScreen studio))
                                     throw new IllegalStateException("Command did not open studio");
                                 screen = studio;
                             }
@@ -132,9 +136,9 @@ public class StudioSmoke implements ClientModInitializer {
                             }
                             case 6 -> {
                                 cap(mc, "settings");
-                                if (mc.gui.screen() == screen)
+                                if (mc.screen == screen)
                                     throw new AssertionError("Settings navigation failed");
-                                mc.gui.screen().onClose();
+                                mc.screen.onClose();
                                 pm.selectVariant(
                                         PvPItem.SOUND_CRYSTAL,
                                         pm.getVariants(PvPItem.SOUND_CRYSTAL).get(1),
@@ -208,6 +212,7 @@ public class StudioSmoke implements ClientModInitializer {
                                             "Font",
                                             "Crosshair",
                                             "Effects",
+                                            "Mace FX",
                                             "Sounds",
                                             "Kill Effects"
                                         }) {
@@ -229,11 +234,30 @@ public class StudioSmoke implements ClientModInitializer {
                                     return;
                                 }
                                 killCheck.join();
+                                screen = new TextureStudioScreen();
+                                mc.setScreen(screen);
+                            }
+                            case 15 -> {
+                                pressTab("Mace FX");
+                                pressTab("Fracture");
+                                if (!"Fracture"
+                                        .equals(de.resourcebuilder.StudioSettings.S.maceEffect))
+                                    throw new AssertionError("Mace effect selection failed");
+                                mc.getToastManager().clear();
+                            }
+                            case 16 -> {
+                                cap(mc, "mace-effects");
+                            }
+                            case 17 -> {
+                                pressTab("Impact");
+                                pressTab("Off");
+                                screen.onClose();
+                                MaceEffectSmoke.run(mc);
                                 Files.writeString(
                                         Path.of("PASSED"),
                                         "Verified English studio navigation, HUD galleries,"
-                                                + " isolated blur, kill effects, armor and crystal"
-                                                + " textures, settings, sound and export.");
+                                                + " isolated blur, kill and mace effects, armor and"
+                                                + " crystal textures, settings, sound and export.");
                                 mc.stop();
                             }
                         }
@@ -267,7 +291,7 @@ public class StudioSmoke implements ClientModInitializer {
 
     void cap(Minecraft mc, String name) {
         Screenshot.takeScreenshot(
-                mc.gameRenderer.mainRenderTarget(),
+                mc.getMainRenderTarget(),
                 img -> {
                     try (img) {
                         img.writeToFile(Path.of(name + ".png"));

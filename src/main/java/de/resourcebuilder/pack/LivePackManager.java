@@ -391,7 +391,7 @@ public final class LivePackManager {
             output.put(
                     "pack.mcmeta",
                     utf8(
-                            "{\"pack\":{\"min_format\":88,\"max_format\":88,\"description\":\"Resource"
+                            "{\"pack\":{\"min_format\":75,\"max_format\":75,\"description\":\"Resource"
                                 + " Builder Studio\"}}"));
             try (var zip = new ZipOutputStream(Files.newOutputStream(temp))) {
                 for (var e : output.entrySet()) {

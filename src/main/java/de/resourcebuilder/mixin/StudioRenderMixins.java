@@ -14,8 +14,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.entity.*;
 import net.minecraft.client.renderer.entity.state.*;
-import net.minecraft.client.renderer.state.LightmapRenderState;
-import net.minecraft.client.renderer.state.level.*;
+import net.minecraft.client.renderer.state.*;
 import net.minecraft.client.renderer.texture.*;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.*;
@@ -27,10 +26,11 @@ import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.*;
 
-@Mixin(Camera.class)
+@Mixin(GameRenderer.class)
 abstract class ZoomCameraMixin {
-    @Inject(method = "calculateFov", at = @At("RETURN"), cancellable = true)
-    private void studioZoom(float delta, CallbackInfoReturnable<Float> result) {
+    @Inject(method = "getFov", at = @At("RETURN"), cancellable = true)
+    private void studioZoom(
+            Camera camera, float delta, boolean useSetting, CallbackInfoReturnable<Float> result) {
         if (ResourceBuilderMod.zoomFactor != 1)
             result.setReturnValue(
                     (float) (result.getReturnValue() / ResourceBuilderMod.zoomFactor));
@@ -48,15 +48,19 @@ abstract class ZoomWheelMixin {
     }
 }
 
-@Mixin(LightmapRenderStateExtractor.class)
+@Mixin(LightTexture.class)
 abstract class LightMixin {
-    @Inject(method = "extract", at = @At("TAIL"))
-    private void studioLight(LightmapRenderState state, float delta, CallbackInfo ci) {
-        if (S.fullbright) {
-            state.nightVisionEffectIntensity = 1;
-            state.brightness = 1;
-            state.needsUpdate = true;
-        }
+    @org.spongepowered.asm.mixin.injection.ModifyArg(
+            method = "updateLightTexture",
+            at =
+                    @At(
+                            value = "INVOKE",
+                            target =
+                                    "Lcom/mojang/blaze3d/buffers/Std140Builder;putFloat(F)Lcom/mojang/blaze3d/buffers/Std140Builder;",
+                            ordinal = 3),
+            index = 0)
+    private float studioLight(float value) {
+        return S.fullbright ? 1f : value;
     }
 }
 
@@ -64,7 +68,12 @@ abstract class LightMixin {
 abstract class WeatherMixin {
     @Inject(method = "extractRenderState", at = @At("HEAD"), cancellable = true)
     private void studioWeather(
-            ClientLevel level, float delta, Vec3 eye, WeatherRenderState state, CallbackInfo ci) {
+            net.minecraft.world.level.Level level,
+            int ticks,
+            float delta,
+            Vec3 eye,
+            WeatherRenderState state,
+            CallbackInfo ci) {
         if (S.clearWeather) {
             state.reset();
             ci.cancel();
@@ -94,10 +103,10 @@ abstract class SkyMixin {
     }
 }
 
-@Mixin(Hud.class)
+@Mixin(Gui.class)
 abstract class ReticleMixin {
-    @Inject(method = "extractCrosshair", at = @At("HEAD"))
-    private void studioCrosshair(GuiGraphicsExtractor g, DeltaTracker dt, CallbackInfo ci) {
+    @Inject(method = "renderCrosshair", at = @At("HEAD"))
+    private void studioCrosshair(GuiGraphics g, DeltaTracker dt, CallbackInfo ci) {
         var pose = g.pose();
         pose.pushMatrix();
         float x = g.guiWidth() / 2f, y = g.guiHeight() / 2f, s = (float) S.crosshairSize;
@@ -105,15 +114,15 @@ abstract class ReticleMixin {
     }
 
     @Redirect(
-            method = "extractCrosshair",
+            method = "renderCrosshair",
             at =
                     @At(
                             value = "INVOKE",
                             target =
-                                    "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIII)V",
+                                    "Lnet/minecraft/client/gui/GuiGraphics;blitSprite(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIII)V",
                             ordinal = 0))
     private void studioReticleColor(
-            GuiGraphicsExtractor g,
+            GuiGraphics g,
             com.mojang.blaze3d.pipeline.RenderPipeline pipe,
             net.minecraft.resources.Identifier sprite,
             int x,
@@ -131,8 +140,8 @@ abstract class ReticleMixin {
         g.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, x, y, w, h, 0xff000000 | rgb);
     }
 
-    @Inject(method = "extractCrosshair", at = @At("RETURN"))
-    private void studioCrosshairEnd(GuiGraphicsExtractor g, DeltaTracker dt, CallbackInfo ci) {
+    @Inject(method = "renderCrosshair", at = @At("RETURN"))
+    private void studioCrosshairEnd(GuiGraphics g, DeltaTracker dt, CallbackInfo ci) {
         g.pose().popMatrix();
     }
 }
@@ -158,7 +167,7 @@ abstract class CrystalPartMixin implements de.resourcebuilder.CrystalCore {
     @ModifyVariable(method = "compile", at = @At("HEAD"), argsOnly = true, ordinal = 0)
     private int studioLight(int light) {
         return rb$core && S.glow > 0
-                ? net.minecraft.util.LightCoordsUtil.lightCoordsWithEmission(
+                ? net.minecraft.client.renderer.LightTexture.lightCoordsWithEmission(
                         light, (int) Math.round(S.glow * 15))
                 : light;
     }
@@ -366,7 +375,7 @@ abstract class GroundMixin {
 
     @Inject(
             method =
-                    "submit(Lnet/minecraft/client/renderer/entity/state/ItemEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V",
+                    "submit(Lnet/minecraft/client/renderer/entity/state/ItemEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V",
             at =
                     @At(
                             value = "INVOKE",
@@ -385,21 +394,21 @@ abstract class GroundMixin {
 
 @Mixin(ScreenEffectRenderer.class)
 abstract class FireMixin {
-    @ModifyConstant(method = "buildFireQuad", constant = @Constant(intValue = -436207617))
-    private static int studioOpacity(int color) {
-        return ((int) Math.round(S.fireOpacity * 255) << 24) | 0xffffff;
+    @ModifyConstant(method = "renderFire", constant = @Constant(floatValue = .9f))
+    private static float studioOpacity(float opacity) {
+        return (float) S.fireOpacity;
     }
 
-    @Inject(method = "submitFire", at = @At("HEAD"))
+    @Inject(method = "renderFire", at = @At("HEAD"))
     private static void studioFire(
-            PoseStack pose, SubmitNodeCollector out, TextureAtlasSprite sprite, CallbackInfo ci) {
+            PoseStack pose, MultiBufferSource out, TextureAtlasSprite sprite, CallbackInfo ci) {
         pose.pushPose();
         pose.translate(0, -(1 - S.fireHeight) * .75, 0);
     }
 
-    @Inject(method = "submitFire", at = @At("RETURN"))
+    @Inject(method = "renderFire", at = @At("RETURN"))
     private static void studioFireEnd(
-            PoseStack pose, SubmitNodeCollector out, TextureAtlasSprite sprite, CallbackInfo ci) {
+            PoseStack pose, MultiBufferSource out, TextureAtlasSprite sprite, CallbackInfo ci) {
         pose.popPose();
     }
 }

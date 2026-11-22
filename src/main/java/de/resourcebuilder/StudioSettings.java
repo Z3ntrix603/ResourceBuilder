@@ -14,7 +14,9 @@ public final class StudioSettings {
     public boolean selfHit = true, fadeHit = true;
     public Set<String> hiddenParticles = new HashSet<>();
     public String killEffect = "Off";
+    public String maceEffect = "Shockwave";
     public boolean finisherSounds = true;
+    public boolean maceSounds = true;
     public boolean favoritesOnly,
             fullbright,
             clearWeather,

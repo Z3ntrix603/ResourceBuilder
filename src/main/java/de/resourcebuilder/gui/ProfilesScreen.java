@@ -4,7 +4,7 @@ import de.resourcebuilder.category.PvPItem;
 import de.resourcebuilder.pack.*;
 import de.resourcebuilder.preset.*;
 
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -114,17 +114,17 @@ final class ProfilesScreen extends StudioScreen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor g, int x, int y, float dt) {
+    public void render(GuiGraphics g, int x, int y, float dt) {
         int margin = (width - Math.min(width - 8, 386)) / 2;
         rounded(g, margin, 5, width - margin, height - 5, 8, 0xec192227);
-        g.centeredText(font, "Profiles", width / 2, 15, TextureStudioScreen.TEXT);
+        g.drawCenteredString(font, "Profiles", width / 2, 15, TextureStudioScreen.TEXT);
         if (!message.isBlank())
-            g.centeredText(font, message, width / 2, height - 44, TextureStudioScreen.MUTED);
-        super.extractRenderState(g, x, y, dt);
+            g.drawCenteredString(font, message, width / 2, height - 44, TextureStudioScreen.MUTED);
+        super.render(g, x, y, dt);
     }
 
     @Override
     public void onClose() {
-        minecraft.setScreenAndShow(back);
+        minecraft.setScreen(back);
     }
 }

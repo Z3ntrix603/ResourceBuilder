@@ -16,7 +16,7 @@ import net.minecraft.network.protocol.game.ClientboundDamageEventPacket;
 import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
 import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -43,7 +43,7 @@ public final class KillEffectSmoke {
     private static void verifyRemotePackets(Minecraft client) {
         var level = client.level;
         int localId = client.player.getId();
-        var victim = EntityTypes.CHICKEN.create(level, EntitySpawnReason.COMMAND);
+        var victim = EntityType.CHICKEN.create(level, EntitySpawnReason.COMMAND);
         int testId = Integer.MAX_VALUE - 1;
         while (level.getEntity(testId) != null) testId--;
         victim.setId(testId);
@@ -87,7 +87,7 @@ public final class KillEffectSmoke {
 
             tracker.onDamage(level, localId, hit);
             victim.discard();
-            var replacement = EntityTypes.CHICKEN.create(level, EntitySpawnReason.COMMAND);
+            var replacement = EntityType.CHICKEN.create(level, EntitySpawnReason.COMMAND);
             replacement.setId(victim.getId());
             replacement.snapTo(client.player.position());
             level.addEntity(replacement);
@@ -114,13 +114,13 @@ public final class KillEffectSmoke {
                             var player = server.getPlayerList().getPlayer(playerId);
                             var level = player.level();
                             var victim =
-                                    EntityTypes.CHICKEN.create(level, EntitySpawnReason.COMMAND);
+                                    EntityType.CHICKEN.create(level, EntitySpawnReason.COMMAND);
                             victim.snapTo(player.position().add(2, 0, 0));
                             level.addFreshEntity(victim);
                             var source = level.damageSources().playerAttack(player);
                             if (!localKill) {
                                 var attacker =
-                                        EntityTypes.ZOMBIE.create(level, EntitySpawnReason.COMMAND);
+                                        EntityType.ZOMBIE.create(level, EntitySpawnReason.COMMAND);
                                 attacker.snapTo(player.position());
                                 level.addFreshEntity(attacker);
                                 try {

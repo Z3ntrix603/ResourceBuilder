@@ -3,19 +3,19 @@ package de.resourcebuilder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.SingleQuadParticle;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.sprite.SpriteId;
+import net.minecraft.client.resources.model.Material;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
 public final class KillEffects {
-    private static final SpriteId GLOW =
-            new SpriteId(TextureAtlas.LOCATION_PARTICLES, Identifier.withDefaultNamespace("glow"));
+    private static final Material GLOW =
+            new Material(TextureAtlas.LOCATION_PARTICLES, Identifier.withDefaultNamespace("glow"));
 
     private KillEffects() {}
 
@@ -41,17 +41,26 @@ public final class KillEffects {
 
     public static void display(Minecraft client, Vec3 position) {
         String mode = StudioSettings.S.killEffect;
-        if (client.level == null || !java.util.Set.of("Ring", "Lightning", "Soul", "Burst").contains(mode)) return;
-        String sound = switch (mode) {
-            case "Soul" -> "particle.soul_escape";
-            case "Burst" -> "entity.firework_rocket.blast";
-            case "Ring" -> "block.amethyst_block.chime";
-            default -> "entity.lightning_bolt.impact";
-        };
+        if (client.level == null
+                || !java.util.Set.of("Ring", "Lightning", "Soul", "Burst").contains(mode)) return;
+        String sound =
+                switch (mode) {
+                    case "Soul" -> "particle.soul_escape";
+                    case "Burst" -> "entity.firework_rocket.blast";
+                    case "Ring" -> "block.amethyst_block.chime";
+                    default -> "entity.lightning_bolt.impact";
+                };
         if (StudioSettings.S.finisherSounds)
-            client.level.playLocalSound(position.x, position.y, position.z,
-                    net.minecraft.sounds.SoundEvent.createVariableRangeEvent(Identifier.withDefaultNamespace(sound)),
-                    net.minecraft.sounds.SoundSource.PLAYERS, .65f, 1f, false);
+            client.level.playLocalSound(
+                    position.x,
+                    position.y,
+                    position.z,
+                    net.minecraft.sounds.SoundEvent.createVariableRangeEvent(
+                            Identifier.withDefaultNamespace(sound)),
+                    net.minecraft.sounds.SoundSource.PLAYERS,
+                    .65f,
+                    1f,
+                    false);
         TextureAtlasSprite sprite = client.getAtlasManager().get(GLOW);
         Vec3 base = position.add(0, .12, 0);
         if ("Ring".equals(mode)) {
@@ -66,24 +75,37 @@ public final class KillEffects {
                 client.particleEngine.add(glow);
             }
         } else if ("Soul".equals(mode)) {
-            var soulSprite = client.getAtlasManager().get(new SpriteId(TextureAtlas.LOCATION_PARTICLES,
-                    Identifier.withDefaultNamespace("soul_0")));
-            for (int i=0; i<12; i++) {
+            var soulSprite =
+                    client.getAtlasManager()
+                            .get(
+                                    new Material(
+                                            TextureAtlas.LOCATION_PARTICLES,
+                                            Identifier.withDefaultNamespace("soul_0")));
+            for (int i = 0; i < 12; i++) {
                 double angle = i * Math.PI * 2 / 12;
-                Glow soul = new Glow(client.level, base.add(.3*Math.cos(angle), .5+i*.055, .3*Math.sin(angle)),
-                        soulSprite, .2f, 36+i);
+                Glow soul =
+                        new Glow(
+                                client.level,
+                                base.add(.3 * Math.cos(angle), .5 + i * .055, .3 * Math.sin(angle)),
+                                soulSprite,
+                                .2f,
+                                36 + i);
                 soul.setColor(.6f, 1f, 1f);
-                soul.setParticleSpeed(.012*Math.cos(angle), .075+i*.002, .012*Math.sin(angle));
+                soul.setParticleSpeed(
+                        .012 * Math.cos(angle), .075 + i * .002, .012 * Math.sin(angle));
                 client.particleEngine.add(soul);
             }
         } else if ("Burst".equals(mode)) {
-            for (int i=0; i<72; i++) {
-                double vertical = 1 - 2*(i+.5)/72;
-                double radius = Math.sqrt(1-vertical*vertical);
-                double angle = i*2.399963229728653;
+            for (int i = 0; i < 72; i++) {
+                double vertical = 1 - 2 * (i + .5) / 72;
+                double radius = Math.sqrt(1 - vertical * vertical);
+                double angle = i * 2.399963229728653;
                 Glow spark = new Glow(client.level, base.add(0, .8, 0), sprite, .09f, 22);
                 spark.setColor(1f, .65f, .25f);
-                spark.setParticleSpeed(.15*radius*Math.cos(angle), .15*vertical, .15*radius*Math.sin(angle));
+                spark.setParticleSpeed(
+                        .15 * radius * Math.cos(angle),
+                        .15 * vertical,
+                        .15 * radius * Math.sin(angle));
                 client.particleEngine.add(spark);
             }
         } else {
@@ -131,8 +153,8 @@ public final class KillEffects {
         }
 
         @Override
-        protected int getLightCoords(float partialTick) {
-            return LightCoordsUtil.FULL_BRIGHT;
+        protected int getLightColor(float partialTick) {
+            return LightTexture.FULL_BRIGHT;
         }
     }
 }

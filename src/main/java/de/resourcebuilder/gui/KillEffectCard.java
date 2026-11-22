@@ -3,7 +3,7 @@ package de.resourcebuilder.gui;
 import de.resourcebuilder.StudioSettings;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 
 final class KillEffectCard extends StudioButton {
     static final String[] MODES = {"Off", "Lightning", "Ring", "Soul", "Burst"};
@@ -24,7 +24,7 @@ final class KillEffectCard extends StudioButton {
     }
 
     @Override
-    protected void extractContents(GuiGraphicsExtractor g, int mx, int my, float dt) {
+    protected void renderContents(GuiGraphics g, int mx, int my, float dt) {
         int x = getX(), y = getY(), right = x + getWidth(), bottom = y + getHeight();
         boolean selected = mode.equals(StudioSettings.S.killEffect);
         int inset = selected ? 1 : 0;
@@ -46,18 +46,25 @@ final class KillEffectCard extends StudioButton {
                 stroke(g, cx + scale / 3, cy - 2, cx - scale / 4, cy + scale, color);
             }
             case "Soul" -> {
-                int lift = (int)(phase*scale);
-                oval(g,cx,cy-lift,Math.max(3,scale/3),Math.max(4,scale/2),0xffa7f7ec);
-                stroke(g,cx-2,cy-lift+scale/2,cx-5,cy+scale/2,0xff74bcce);
-                g.fill(cx-3,cy-lift-2,cx-1,cy-lift,0xff142b34);
-                g.fill(cx+2,cy-lift-2,cx+4,cy-lift,0xff142b34);
+                int lift = (int) (phase * scale);
+                oval(g, cx, cy - lift, Math.max(3, scale / 3), Math.max(4, scale / 2), 0xffa7f7ec);
+                stroke(g, cx - 2, cy - lift + scale / 2, cx - 5, cy + scale / 2, 0xff74bcce);
+                g.fill(cx - 3, cy - lift - 2, cx - 1, cy - lift, 0xff142b34);
+                g.fill(cx + 2, cy - lift - 2, cx + 4, cy - lift, 0xff142b34);
             }
             case "Burst" -> {
-                for(int i=0;i<8;i++) {
-                    double angle=i*Math.PI/4;
-                    int radius=(int)(scale*(.4+phase));
-                    int sx=cx+(int)(radius*Math.cos(angle)), sy=cy+(int)(radius*Math.sin(angle));
-                    stroke(g,sx,sy,sx+(int)(4*Math.cos(angle)),sy+(int)(4*Math.sin(angle)),0xffffbe69);
+                for (int i = 0; i < 8; i++) {
+                    double angle = i * Math.PI / 4;
+                    int radius = (int) (scale * (.4 + phase));
+                    int sx = cx + (int) (radius * Math.cos(angle)),
+                            sy = cy + (int) (radius * Math.sin(angle));
+                    stroke(
+                            g,
+                            sx,
+                            sy,
+                            sx + (int) (4 * Math.cos(angle)),
+                            sy + (int) (4 * Math.sin(angle)),
+                            0xffffbe69);
                 }
             }
             case "Ring" -> {
@@ -78,11 +85,17 @@ final class KillEffectCard extends StudioButton {
             }
         }
         var font = Minecraft.getInstance().font;
-        g.text(font, mode, cx - font.width(mode) / 2, bottom - 15, TextureStudioScreen.TEXT, false);
-        if (selected) g.text(font, "✓", x + 6, y + 5, TextureStudioScreen.ACCENT, false);
+        g.drawString(
+                font,
+                mode,
+                cx - font.width(mode) / 2,
+                bottom - 15,
+                TextureStudioScreen.TEXT,
+                false);
+        if (selected) g.drawString(font, "✓", x + 6, y + 5, TextureStudioScreen.ACCENT, false);
     }
 
-    private static void oval(GuiGraphicsExtractor g, int cx, int cy, int rx, int ry, int color) {
+    private static void oval(GuiGraphics g, int cx, int cy, int rx, int ry, int color) {
         int px = cx + rx, py = cy;
         for (int i = 1; i <= 32; i++) {
             double angle = Math.PI * 2 * i / 32;
@@ -94,7 +107,7 @@ final class KillEffectCard extends StudioButton {
         }
     }
 
-    private static void stroke(GuiGraphicsExtractor g, int x, int y, int ex, int ey, int color) {
+    private static void stroke(GuiGraphics g, int x, int y, int ex, int ey, int color) {
         int steps = Math.max(1, Math.max(Math.abs(ex - x), Math.abs(ey - y)));
         for (int i = 0; i <= steps; i++) {
             int px = x + (ex - x) * i / steps, py = y + (ey - y) * i / steps;

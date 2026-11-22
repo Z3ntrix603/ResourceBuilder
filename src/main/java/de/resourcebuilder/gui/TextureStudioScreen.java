@@ -7,7 +7,7 @@ import de.resourcebuilder.category.PvPItem;
 import de.resourcebuilder.pack.*;
 import de.resourcebuilder.preset.*;
 
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.input.*;
 import net.minecraft.network.chat.Component;
@@ -76,7 +76,7 @@ public final class TextureStudioScreen extends StudioScreen {
                         pw,
                         17,
                         "Profiles",
-                        () -> minecraft.setScreenAndShow(new ProfilesScreen(this))));
+                        () -> minecraft.setScreen(new ProfilesScreen(this))));
 
         addRenderableWidget(
                 new StudioButton(
@@ -85,7 +85,7 @@ public final class TextureStudioScreen extends StudioScreen {
                         pw,
                         17,
                         "Settings",
-                        () -> minecraft.setScreenAndShow(new SettingsScreen(this))));
+                        () -> minecraft.setScreen(new SettingsScreen(this))));
 
         int tabX = left + 9, tabY = top + 34;
         for (StudioTab section : StudioTab.values()) {
@@ -108,21 +108,44 @@ public final class TextureStudioScreen extends StudioScreen {
 
         addRenderableWidget(
                 new StudioButton(right - 65, bottom - 23, 58, 16, "Done", this::onClose));
-        if (tab == StudioTab.KILLS) {
+        if (tab == StudioTab.KILLS || tab == StudioTab.MACE) {
             search = null;
             int cardWidth = (right - gridX - 8) / 3;
             int cardHeight = Math.min(100, (bottom - 36 - gridY) / 2);
-            int x = gridX;
-            for (int i=0; i<KillEffectCard.MODES.length; i++) {
-                addRenderableWidget(new KillEffectCard(x + (i%3)*cardWidth, gridY + (i/3)*(cardHeight+4),
-                        cardWidth - 4, cardHeight, KillEffectCard.MODES[i]));
+            String[] modes = tab == StudioTab.KILLS ? KillEffectCard.MODES : MaceEffectCard.MODES;
+            for (int i = 0; i < modes.length; i++) {
+                addRenderableWidget(
+                        tab == StudioTab.KILLS
+                                ? new KillEffectCard(
+                                        gridX + (i % 3) * cardWidth,
+                                        gridY + (i / 3) * (cardHeight + 4),
+                                        cardWidth - 4,
+                                        cardHeight,
+                                        modes[i])
+                                : new MaceEffectCard(
+                                        gridX + (i % 3) * cardWidth,
+                                        gridY + (i / 3) * (cardHeight + 4),
+                                        cardWidth - 4,
+                                        cardHeight,
+                                        modes[i]));
             }
-            addRenderableWidget(new StudioButton(right-117, toolbarY, 106, 17,
-                    "Finisher sound � " + (S.finisherSounds ? "On" : "Off"), () -> {
-                        S.finisherSounds = !S.finisherSounds;
-                        S.save();
-                        rebuildWidgets();
-                    }));
+            addRenderableWidget(
+                    new StudioButton(
+                            right - 117,
+                            toolbarY,
+                            106,
+                            17,
+                            (tab == StudioTab.KILLS ? "Finisher" : "Mace")
+                                    + " sound · "
+                                    + ((tab == StudioTab.KILLS ? S.finisherSounds : S.maceSounds)
+                                            ? "On"
+                                            : "Off"),
+                            () -> {
+                                if (tab == StudioTab.KILLS) S.finisherSounds = !S.finisherSounds;
+                                else S.maceSounds = !S.maceSounds;
+                                S.save();
+                                rebuildWidgets();
+                            }));
             return;
         }
         int y = toolbarY;
@@ -132,7 +155,7 @@ public final class TextureStudioScreen extends StudioScreen {
         search.setBordered(false);
         search.setMaxLength(80);
         search.setValue(query);
-        search.setHint(Component.literal("Find style …").withColor(MUTED & 0xffffff));
+        search.setHint(Component.literal("Find style ...").withColor(MUTED & 0xffffff));
 
         search.setResponder(
                 value -> {
@@ -213,7 +236,7 @@ public final class TextureStudioScreen extends StudioScreen {
         var needle = query.toLowerCase(Locale.ROOT);
 
         entries =
-                tab == StudioTab.KILLS
+                (tab == StudioTab.KILLS || tab == StudioTab.MACE)
                         ? List.of()
                         : packs.getVariants(item).stream()
                                 .filter(
@@ -266,7 +289,7 @@ public final class TextureStudioScreen extends StudioScreen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor g, int mx, int my, float dt) {
+    public void render(GuiGraphics g, int mx, int my, float dt) {
 
         int bg = new int[] {0x101a20, 0x211a25, 0x131e2a}[Math.floorMod(S.theme, 3)];
         rounded(g, left - 1, top + 2, right + 1, bottom + 3, 10, 0x32101820);
@@ -277,15 +300,21 @@ public final class TextureStudioScreen extends StudioScreen {
         g.fill(left + 10, toolbarY - 4, right - 10, toolbarY - 3, 0x405e7478);
         if (nav > 0) g.fill(left + nav, toolbarY + 3, left + nav + 1, bottom - 28, 0x38596b68);
         rounded(g, left + 11, top + 10, left + 14, top + 26, 1, ACCENT);
-        g.text(font, "Resource Builder", left + 20, top + 8, TEXT, false);
-        g.text(font, "Made by Zentrix", left + 20, top + 20, MUTED, false);
-        if (tab == StudioTab.KILLS) {
-            g.text(font, "On kill", gridX + 2, toolbarY + 6, TEXT, false);
-            g.text(font, "Only visible to you", gridX + 2, bottom - 18, MUTED, false);
-            super.extractRenderState(g, mx, my, dt);
+        g.drawString(font, "Resource Builder", left + 20, top + 8, TEXT, false);
+        g.drawString(font, "Made by Zentrix", left + 20, top + 20, MUTED, false);
+        if (tab == StudioTab.KILLS || tab == StudioTab.MACE) {
+            g.drawString(
+                    font,
+                    tab == StudioTab.KILLS ? "On kill" : "On mace hit",
+                    gridX + 2,
+                    toolbarY + 6,
+                    TEXT,
+                    false);
+            g.drawString(font, "Only visible to you", gridX + 2, bottom - 18, MUTED, false);
+            super.render(g, mx, my, dt);
             return;
         }
-        if (nav > 0) g.text(font, "Categories", left + 10, toolbarY + 5, MUTED, false);
+        if (nav > 0) g.drawString(font, "Categories", left + 10, toolbarY + 5, MUTED, false);
         rounded(g, search.getX() - 4, toolbarY, right - 8, toolbarY + 17, 5, 0x92203239);
         for (int n = 0; nav > 0 && n < navRows() && n + navOffset < groups.size(); n++) {
 
@@ -306,9 +335,9 @@ public final class TextureStudioScreen extends StudioScreen {
 
             if (selected) rounded(g, left + 5, y + 5, left + 7, y + 13, 1, ACCENT);
 
-            if (minecraft.level != null) g.fakeItem(group.getItemStack(), left + 8, y + 1);
+            if (minecraft.level != null) g.renderFakeItem(group.getItemStack(), left + 8, y + 1);
 
-            g.text(
+            g.drawString(
                     font,
                     font.plainSubstrByWidth(group.getDisplayName(), nav - 32),
                     left + 28,
@@ -317,7 +346,7 @@ public final class TextureStudioScreen extends StudioScreen {
                     false);
         }
 
-        g.text(
+        g.drawString(
                 font,
                 font.plainSubstrByWidth(item.getDisplayName(), search.getX() - gridX - 4),
                 gridX,
@@ -355,22 +384,22 @@ public final class TextureStudioScreen extends StudioScreen {
             boolean rendered = !item.isSound() && previews.draw(g, item, v, px, py, previewW, dim);
 
             if (!rendered && minecraft.level != null)
-                g.fakeItem(item.getItemStack(), x + (w - 16) / 2, y + (h - 26) / 2);
+                g.renderFakeItem(item.getItemStack(), x + (w - 16) / 2, y + (h - 26) / 2);
 
             if (S.favorites.contains(favorite(item, v.getPackName())))
-                g.text(font, "★", x + w - 10, y + 2, 0xffffcf78, false);
+                g.drawString(font, "★", x + w - 10, y + 2, 0xffffcf78, false);
 
-            if (chosen) g.text(font, "✓", x + 3, y + 2, ACCENT, false);
+            if (chosen) g.drawString(font, "✓", x + 3, y + 2, ACCENT, false);
 
             String name = v.getPackName();
             if (font.width(name) > w - 5)
-                name = font.plainSubstrByWidth(name, w - 5 - font.width("…")) + "…";
+                name = font.plainSubstrByWidth(name, w - 5 - font.width("...")) + "...";
 
-            g.text(font, name, x + (w - font.width(name)) / 2, y + h - 11, TEXT, false);
+            g.drawString(font, name, x + (w - font.width(name)) / 2, y + h - 11, TEXT, false);
         }
 
         if (entries.isEmpty())
-            g.text(font, "No matching styles", gridX + 3, gridY + 12, MUTED, false);
+            g.drawString(font, "No matching styles", gridX + 3, gridY + 12, MUTED, false);
 
         if (maxRow() > 0) {
 
@@ -391,7 +420,7 @@ public final class TextureStudioScreen extends StudioScreen {
         if (!hovered.isBlank()) hint = hovered + "  ·  " + "Right click: favorite";
 
         int hintX = Math.max(gridX, left + 80);
-        g.text(
+        g.drawString(
                 font,
                 font.plainSubstrByWidth(hint, right - hintX - 73),
                 hintX,
@@ -399,14 +428,14 @@ public final class TextureStudioScreen extends StudioScreen {
                 MUTED,
                 false);
 
-        super.extractRenderState(g, mx, my, dt);
+        super.render(g, mx, my, dt);
     }
 
     @Override
     public boolean mouseClicked(MouseButtonEvent e, boolean twice) {
 
         if (super.mouseClicked(e, twice)) return true;
-        if (tab == StudioTab.KILLS) return false;
+        if (tab == StudioTab.KILLS || tab == StudioTab.MACE) return false;
 
         double x = e.x(), y = e.y();
 

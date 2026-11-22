@@ -15,7 +15,7 @@ abstract class StudioBlurMixin {
     @Inject(method = "getMenuBackgroundBlurriness", at = @At("RETURN"), cancellable = true)
     private void studioBlur(CallbackInfoReturnable<Integer> result) {
         var mc = Minecraft.getInstance();
-        if (mc != null && mc.gui != null && mc.gui.screen() instanceof StudioScreen)
+        if (mc != null && mc.gui != null && mc.screen instanceof StudioScreen)
             result.setReturnValue(Math.max(8, result.getReturnValueI()));
     }
 }

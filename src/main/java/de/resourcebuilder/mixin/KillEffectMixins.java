@@ -1,6 +1,7 @@
 package de.resourcebuilder.mixin;
 
 import de.resourcebuilder.KillEffects;
+import de.resourcebuilder.MaceEffects;
 import de.resourcebuilder.RemoteKillTracker;
 
 import net.minecraft.client.Minecraft;
@@ -35,6 +36,7 @@ abstract class RemoteKillEffectMixin {
     @Inject(method = "handleDamageEvent", at = @At("TAIL"))
     private void studioDamage(ClientboundDamageEventPacket packet, CallbackInfo ci) {
         var client = Minecraft.getInstance();
+        MaceEffects.onDamage(client, packet);
         if (client.hasSingleplayerServer() || client.level != level || client.player == null)
             return;
         studioKillTracker.onDamage(level, client.player.getId(), packet);

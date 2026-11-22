@@ -5,10 +5,10 @@ import com.mojang.blaze3d.platform.InputConstants;
 import de.resourcebuilder.gui.TextureStudioScreen;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -43,11 +43,10 @@ public class ResourceBuilderMod implements ClientModInitializer {
     private static void updateZoom(Minecraft client) {
         var settings = StudioSettings.S;
         while (zoomKey.consumeClick()) if (settings.zoomToggle) toggled = !toggled;
-        if (!settings.zoomToggle || client.level == null || client.gui.screen() != null)
-            toggled = false;
+        if (!settings.zoomToggle || client.level == null || client.screen != null) toggled = false;
         zoomActive =
                 client.level != null
-                        && client.gui.screen() == null
+                        && client.screen == null
                         && (settings.zoomToggle ? toggled : zoomKey.isDown());
         double target = zoomActive ? settings.zoom : 1;
         zoomFactor = settings.smoothZoom ? zoomFactor + (target - zoomFactor) * .45 : target;
@@ -84,7 +83,7 @@ public class ResourceBuilderMod implements ClientModInitializer {
                                         .migrateRetiredSelections());
 
         zoomKey =
-                KeyMappingHelper.registerKeyMapping(
+                KeyBindingHelper.registerKeyBinding(
                         new KeyMapping(
                                 "key.resourcebuilder.zoom",
                                 InputConstants.Type.KEYSYM,
@@ -92,7 +91,7 @@ public class ResourceBuilderMod implements ClientModInitializer {
                                 CATEGORY));
 
         openGuiKey =
-                KeyMappingHelper.registerKeyMapping(
+                KeyBindingHelper.registerKeyBinding(
                         new KeyMapping(
                                 "key.resourcebuilder.open",
                                 InputConstants.Type.KEYSYM,
@@ -104,13 +103,13 @@ public class ResourceBuilderMod implements ClientModInitializer {
                     updateZoom(client);
                     if (previewSound != null
                             && System.nanoTime() >= previewAfter
-                            && client.gui.overlay() == null) {
+                            && client.getOverlay() == null) {
                         client.getSoundManager().play(SimpleSoundInstance.forUI(previewSound, 1));
                         previewSound = null;
                     }
                     while (openGuiKey.consumeClick()) {
-                        if (client.gui.screen() == null) {
-                            client.setScreenAndShow(new TextureStudioScreen());
+                        if (client.screen == null) {
+                            client.setScreen(new TextureStudioScreen());
                         }
                     }
                 });
@@ -119,53 +118,53 @@ public class ResourceBuilderMod implements ClientModInitializer {
         ClientCommandRegistrationCallback.EVENT.register(
                 (dispatcher, registryAccess) -> {
                     dispatcher.register(
-                            ClientCommands.literal("rb")
+                            ClientCommandManager.literal("rb")
                                     .executes(
                                             ctx -> {
                                                 Minecraft.getInstance()
                                                         .execute(
                                                                 () -> {
                                                                     Minecraft.getInstance()
-                                                                            .setScreenAndShow(
+                                                                            .setScreen(
                                                                                     new TextureStudioScreen());
                                                                 });
                                                 return 1;
                                             }));
                     dispatcher.register(
-                            ClientCommands.literal("textures")
+                            ClientCommandManager.literal("textures")
                                     .executes(
                                             ctx -> {
                                                 Minecraft.getInstance()
                                                         .execute(
                                                                 () -> {
                                                                     Minecraft.getInstance()
-                                                                            .setScreenAndShow(
+                                                                            .setScreen(
                                                                                     new TextureStudioScreen());
                                                                 });
                                                 return 1;
                                             }));
                     dispatcher.register(
-                            ClientCommands.literal("resourcebuilder")
+                            ClientCommandManager.literal("resourcebuilder")
                                     .executes(
                                             ctx -> {
                                                 Minecraft.getInstance()
                                                         .execute(
                                                                 () -> {
                                                                     Minecraft.getInstance()
-                                                                            .setScreenAndShow(
+                                                                            .setScreen(
                                                                                     new TextureStudioScreen());
                                                                 });
                                                 return 1;
                                             }));
                     dispatcher.register(
-                            ClientCommands.literal("studio")
+                            ClientCommandManager.literal("studio")
                                     .executes(
                                             ctx -> {
                                                 Minecraft.getInstance()
                                                         .execute(
                                                                 () -> {
                                                                     Minecraft.getInstance()
-                                                                            .setScreenAndShow(
+                                                                            .setScreen(
                                                                                     new TextureStudioScreen());
                                                                 });
                                                 return 1;

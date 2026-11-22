@@ -1,6 +1,6 @@
 package de.resourcebuilder.gui;
 
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
@@ -11,12 +11,11 @@ public abstract class StudioScreen extends Screen {
 
     // Screen has already blurred the world in the preceding render stratum.
     @Override
-    protected void extractMenuBackground(GuiGraphicsExtractor graphics) {
+    protected void renderMenuBackground(GuiGraphics graphics) {
         graphics.fill(0, 0, width, height, 0x20081119);
     }
 
-    static void rounded(
-            GuiGraphicsExtractor g, int x, int y, int right, int bottom, int radius, int color) {
+    static void rounded(GuiGraphics g, int x, int y, int right, int bottom, int radius, int color) {
         int r = Math.min(radius, Math.min(right - x, bottom - y) / 2);
         if (r <= 0) {
             g.fill(x, y, right, bottom, color);
