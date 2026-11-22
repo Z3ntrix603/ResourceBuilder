@@ -47,6 +47,7 @@ public class StudioSmoke implements ClientModInitializer {
             var pm = LivePackManager.getInstance();
             switch (stage++) {
               case 0 -> {
+                InventoryBlocksSmoke.run();
                 mc.player.connection.sendCommand("summon minecraft:end_crystal ~3 ~1 ~");
                 mc.player.connection.sendCommand("give @s minecraft:diamond_sword");
                 mc.player.connection.sendCommand("rb");
@@ -131,6 +132,7 @@ public class StudioSmoke implements ClientModInitializer {
               }
               case 9 -> {
                 cap(mc, "hotbar");
+                pm.selectVariant(PvPItem.INVENTORY, pm.getVariants(PvPItem.INVENTORY).get(1), true);
                 pressTab("Effects");
                 pressTab("Sounds");
                 pressTab("Items");
@@ -139,6 +141,16 @@ public class StudioSmoke implements ClientModInitializer {
                 pressTab("Vitals");
               }
               case 10 -> {
+                var inventory =
+                    net.minecraft.resources.Identifier.withDefaultNamespace(
+                        "textures/gui/container/inventory.png");
+                try (var in = mc.getResourceManager().open(inventory)) {
+                  if (!java.util.Arrays.equals(
+                      in.readAllBytes(),
+                      pm.getActiveSelection(PvPItem.INVENTORY)
+                          .texture("gui/container/inventory")))
+                    throw new AssertionError("Inventory texture mismatch");
+                }
                 cap(mc, "hearts");
                 HudChecks.apply(pm);
                 screen.keyPressed(new KeyEvent(org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT, 0, 0));

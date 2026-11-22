@@ -25,7 +25,7 @@ enum StudioTab {
   }
 
   boolean hasSidebar() {
-    return this == ITEMS || this == ARMOR || this == VITALS || this == EFFECTS || this == SOUNDS;
+    return this == ITEMS || this == ARMOR || this == HOTBAR || this == VITALS || this == EFFECTS || this == SOUNDS;
   }
 
   static StudioTab of(PvPItem item) {
@@ -33,7 +33,7 @@ enum StudioTab {
     return switch (item) {
       case DIAMOND_ARMOR, NETHERITE_ARMOR, ELYTRA, SHIELD -> ARMOR;
       case SKY -> SKY;
-      case HUD -> HOTBAR;
+      case HUD, INVENTORY -> HOTBAR;
       case HEARTS, HUNGER, XP_BAR -> VITALS;
       case CROSSHAIR -> CROSSHAIR;
       case FONT -> FONT;

@@ -16,7 +16,7 @@ final class SettingsScreen extends StudioScreen {
     private static final String[] PAGES = {
         "Hit color", "Crystal glow", "Swing animation", "Held items", "Ground items",
         "Item position", "Enchant glint", "Zoom", "Crosshair", "Fullbright",
-        "Weather & time", "Particles", "Low fire", "Controls", "Window"
+        "Weather & time", "Particles", "Low fire", "Controls", "Window", "Inventory highlight"
     };
     private final Screen back;
     private final PreviewCache preview = new PreviewCache();
@@ -187,6 +187,19 @@ final class SettingsScreen extends StudioScreen {
                 slider("Darken background", S.darken, 0, 1, v -> S.darken = v);
                 slider("Menu size", S.windowSize, .76, 1, v -> S.windowSize = v);
             }
+            case 15 -> {
+                toggle("Highlight important items", S.visual.inventoryHighlight, () -> S.visual.inventoryHighlight = !S.visual.inventoryHighlight);
+                action(
+                        "Color · #" + String.format("%06X", S.visual.inventoryHighlightColor),
+                        () -> {
+                            int[] colors = de.resourcebuilder.gui.StudioColorButton.PALETTE;
+                            int index = 0;
+                            for (int i = 0; i < colors.length; i++)
+                                if (colors[i] == S.visual.inventoryHighlightColor) index = i;
+                            S.visual.inventoryHighlightColor = colors[(index + 1) % colors.length];
+                        });
+                slider("Opacity", S.visual.inventoryHighlightOpacity, 0, 1, v -> S.visual.inventoryHighlightOpacity = v);
+            }
         }
     }
 
@@ -257,6 +270,11 @@ final class SettingsScreen extends StudioScreen {
                 S.darken = .55;
                 S.opacity = .96;
                 S.windowSize = 1;
+            }
+            case 15 -> {
+                S.visual.inventoryHighlight = true;
+                S.visual.inventoryHighlightColor = 0x64e6b5;
+                S.visual.inventoryHighlightOpacity = .35;
             }
         }
         S.save();
