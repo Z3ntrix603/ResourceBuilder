@@ -4,7 +4,7 @@ import static de.resourcebuilder.StudioSettings.S;
 
 import java.util.List;
 import java.util.function.DoubleConsumer;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
@@ -197,13 +197,13 @@ public final class VisualsScreen extends StudioScreen {
   }
 
   @Override
-  public void extractRenderState(GuiGraphicsExtractor graphics, int mx, int my, float dt) {
+  public void render(GuiGraphics graphics, int mx, int my, float dt) {
     rounded(graphics, left, top, right, bottom, 10, 0xec101a20);
     rounded(graphics, left + 5, top + 43, left + nav, bottom - 8, 7, 0x78152227);
-    graphics.text(font, "Resource Builder", left + 80, top + 11, TextureStudioScreen.TEXT, false);
-    graphics.text(font, "Visuals · " + PAGE_LABELS.get(page), contentX, top + 48, TextureStudioScreen.ACCENT, false);
-    graphics.text(font, "Mod effect · live preview", contentX, bottom - 20, TextureStudioScreen.MUTED, false);
-    super.extractRenderState(graphics, mx, my, dt);
+    graphics.drawString(font, "Resource Builder", left + 80, top + 11, TextureStudioScreen.TEXT, false);
+    graphics.drawString(font, "Visuals · " + PAGE_LABELS.get(page), contentX, top + 48, TextureStudioScreen.ACCENT, false);
+    graphics.drawString(font, "Mod effect · live preview", contentX, bottom - 20, TextureStudioScreen.MUTED, false);
+    super.render(graphics, mx, my, dt);
   }
 
   @Override
