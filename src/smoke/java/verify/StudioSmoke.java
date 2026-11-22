@@ -19,6 +19,7 @@ public class StudioSmoke implements ClientModInitializer {
 
     public void onInitializeClient() {
         ProfileSmoke.run();
+        VisualsScreenSmoke.run();
         ClientTickEvents.END_CLIENT_TICK.register(
                 mc -> {
                     if (++ticks < 100 || ticks % 24 != 0 || mc.getOverlay() != null) return;
