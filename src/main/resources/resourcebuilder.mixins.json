@@ -21,6 +21,9 @@
     "ArmorTintMixin",
     "CrystalPartMixin",
     "ParticleMixin",
+    "ParticleVisualAccess",
+    "GameRendererPostAccess",
+    "PostPassColorMixin",
     "IntegratedKillCreditMixin",
     "RemoteKillEffectMixin"
   ],

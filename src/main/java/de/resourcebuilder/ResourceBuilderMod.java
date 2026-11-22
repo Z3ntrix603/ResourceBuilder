@@ -102,6 +102,7 @@ public class ResourceBuilderMod implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(
                 client -> {
                     updateZoom(client);
+                    de.resourcebuilder.render.VisualRuntime.tick(client);
                     if (previewSound != null
                             && System.nanoTime() >= previewAfter
                             && client.gui.overlay() == null) {

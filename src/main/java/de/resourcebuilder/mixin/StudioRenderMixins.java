@@ -166,6 +166,18 @@ abstract class CrystalPartMixin implements de.resourcebuilder.CrystalCore {
 
 @Mixin(net.minecraft.client.particle.ParticleEngine.class)
 abstract class ParticleMixin {
+    @Unique private boolean rb$duplicating;
+
+    @Shadow
+    public abstract net.minecraft.client.particle.Particle createParticle(
+            net.minecraft.core.particles.ParticleOptions options,
+            double x,
+            double y,
+            double z,
+            double vx,
+            double vy,
+            double vz);
+
     @Inject(method = "createParticle", at = @At("HEAD"), cancellable = true)
     private void studioParticle(
             net.minecraft.core.particles.ParticleOptions options,
@@ -180,6 +192,45 @@ abstract class ParticleMixin {
                 && S.hiddenParticles.contains(
                         BuiltInRegistries.PARTICLE_TYPE.getKey(options.getType()).getPath()))
             ci.setReturnValue(null);
+        if (!rb$duplicating && S.visual.particleAmount < 1 && Math.random() >= S.visual.particleAmount)
+            ci.setReturnValue(null);
+    }
+
+    @Inject(method = "createParticle", at = @At("RETURN"))
+    private void studioParticleVisuals(
+            net.minecraft.core.particles.ParticleOptions options,
+            double x,
+            double y,
+            double z,
+            double vx,
+            double vy,
+            double vz,
+            CallbackInfoReturnable<net.minecraft.client.particle.Particle> ci) {
+        var particle = ci.getReturnValue();
+        if (particle == null) return;
+        String type = BuiltInRegistries.PARTICLE_TYPE.getKey(options.getType()).getPath();
+        rb$styleParticle(particle, type);
+        if (rb$duplicating) return;
+        int copies = de.resourcebuilder.render.VisualRuntime.extraCopies(S.visual.particleAmount, Math.random());
+        rb$duplicating = true;
+        try {
+            for (int i = 0; i < copies; i++) createParticle(options, x, y, z, vx, vy, vz);
+        } finally {
+            rb$duplicating = false;
+        }
+    }
+
+    @Unique
+    private void rb$styleParticle(net.minecraft.client.particle.Particle particle, String type) {
+        particle.setLifetime(Math.max(1, (int) Math.round(particle.getLifetime() * S.visual.particleLifetime)));
+        if (particle instanceof net.minecraft.client.particle.SingleQuadParticle quad) {
+            if (S.visual.particleColorsEnabled) {
+                int color = de.resourcebuilder.render.VisualRuntime.particleColor(type, S.visual);
+                quad.setColor((color >> 16 & 255) / 255f, (color >> 8 & 255) / 255f, (color & 255) / 255f);
+            }
+            var access = (de.resourcebuilder.mixin.ParticleVisualAccess) quad;
+            access.rb$setQuadSize(access.rb$getQuadSize() * (float) S.visual.particleSize);
+        }
     }
 }
 
@@ -387,14 +438,14 @@ abstract class GroundMixin {
 abstract class FireMixin {
     @ModifyConstant(method = "buildFireQuad", constant = @Constant(intValue = -436207617))
     private static int studioOpacity(int color) {
-        return ((int) Math.round(S.fireOpacity * 255) << 24) | 0xffffff;
+        return ((int) Math.round(S.visual.fireOpacity * 255) << 24) | S.visual.fireColor;
     }
 
     @Inject(method = "submitFire", at = @At("HEAD"))
     private static void studioFire(
             PoseStack pose, SubmitNodeCollector out, TextureAtlasSprite sprite, CallbackInfo ci) {
         pose.pushPose();
-        pose.translate(0, -(1 - S.fireHeight) * .75, 0);
+        pose.translate(0, -(1 - S.visual.fireHeight) * .75, 0);
     }
 
     @Inject(method = "submitFire", at = @At("RETURN"))

@@ -18,6 +18,7 @@ public class StudioSmoke implements ClientModInitializer {
   public void onInitializeClient() {
     ProfileSmoke.run();
     VisualsScreenSmoke.run();
+    VisualRuntimeSmoke.run();
     ClientTickEvents.END_CLIENT_TICK.register(
         mc -> {
           if (++ticks < 100 || ticks % 24 != 0 || mc.gui.overlay() != null) return;
@@ -220,9 +221,18 @@ public class StudioSmoke implements ClientModInitializer {
               case 18 -> {
                 if (!(mc.gui.screen() instanceof de.resourcebuilder.gui.VisualsScreen))
                   throw new AssertionError("Visuals navigation failed");
+                de.resourcebuilder.StudioSettings.S.visual.colorEnabled = true;
+                de.resourcebuilder.StudioSettings.S.visual.saturation = 1.2;
                 cap(mc, "visuals");
               }
               case 19 -> {
+                if (!de.resourcebuilder.render.VisualRuntime.COLOR_GRADE.equals(
+                    mc.gameRenderer.currentPostEffect()))
+                  throw new AssertionError("Global color post effect was not activated");
+                cap(mc, "color-filter");
+                de.resourcebuilder.StudioSettings.S.visual.colorEnabled = false;
+              }
+              case 20 -> {
                 mc.gui.screen().onClose();
                 screen.onClose();
                 MaceEffectSmoke.run(mc);

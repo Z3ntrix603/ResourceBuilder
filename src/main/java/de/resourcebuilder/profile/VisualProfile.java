@@ -13,6 +13,7 @@ public final class VisualProfile {
   public int explosionColor = 0xffffff;
   public int enchantmentColor = 0xa875ff;
   public int finisherColor = 0x78e6ef;
+  public boolean particleColorsEnabled;
   public double particleSize = 1;
   public double particleAmount = 1;
   public double particleLifetime = 1;
