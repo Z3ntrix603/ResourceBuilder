@@ -18,7 +18,8 @@ public class StudioSmoke implements ClientModInitializer {
     TextureStudioScreen screen;
 
     public void onInitializeClient() {
-        ProfileSmoke.run();`r`n        ColorPickerSmoke.run();
+        ProfileSmoke.run();
+        ColorPickerSmoke.run();
         ImageImportSmoke.run();
         VisualRuntimeSmoke.run();
         VisualsScreenSmoke.run();

@@ -17,7 +17,7 @@ final class StudioColorButton extends StudioButton {
         label + " · #" + String.format("%06X", current & 0xffffff),
         () -> {
           var minecraft = net.minecraft.client.Minecraft.getInstance();
-          minecraft.setScreenAndShow(new ColorPickerScreen(minecraft.gui.screen(), current, change, refresh));
+          minecraft.setScreenAndShow(new ColorPickerScreen(minecraft.screen, current, change, refresh));
         });
   }
 }
