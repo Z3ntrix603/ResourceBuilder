@@ -19,6 +19,7 @@ public class StudioSmoke implements ClientModInitializer {
 
     public void onInitializeClient() {
         ProfileSmoke.run();
+        ImageImportSmoke.run();
         VisualsScreenSmoke.run();
         ClientTickEvents.END_CLIENT_TICK.register(
                 mc -> {

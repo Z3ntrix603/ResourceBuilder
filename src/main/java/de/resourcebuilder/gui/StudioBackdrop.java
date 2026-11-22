@@ -19,7 +19,7 @@ final class StudioBackdrop {
             Identifier.fromNamespaceAndPath("resourcebuilder", "studio/profile_background");
     private static String loadedProfile = "";
 
-    static boolean drawProfile(GuiGraphicsExtractor g, String value, int x, int y, int right, int bottom) {
+    static boolean drawProfile(GuiGraphics g, String value, int x, int y, int right, int bottom) {
         if (value == null || value.isBlank()) return false;
         Path path;
         try { path = Path.of(value); } catch (RuntimeException invalid) { return false; }

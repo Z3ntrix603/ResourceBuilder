@@ -12,7 +12,10 @@ public abstract class StudioScreen extends Screen {
     // Screen has already blurred the world in the preceding render stratum.
     @Override
     protected void renderMenuBackground(GuiGraphics graphics) {
-        graphics.fill(0, 0, width, height, 0x20081119);
+        var visual = de.resourcebuilder.StudioSettings.S.visual;
+        StudioBackdrop.drawProfile(graphics, visual.menuImage, 0, 0, width, height);
+        graphics.fill(0, 0, width, height,
+                ((int) Math.round(255 * visual.menuOpacity) << 24) | visual.menuTint);
     }
 
     static void rounded(GuiGraphics g, int x, int y, int right, int bottom, int radius, int color) {
