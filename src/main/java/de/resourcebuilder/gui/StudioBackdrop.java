@@ -15,6 +15,31 @@ final class StudioBackdrop {
     private static final Identifier CUSTOM_ID =
             Identifier.fromNamespaceAndPath("resourcebuilder", "studio/custom");
     private static boolean loaded;
+    private static final Identifier PROFILE_ID =
+            Identifier.fromNamespaceAndPath("resourcebuilder", "studio/profile_background");
+    private static String loadedProfile = "";
+
+    static boolean drawProfile(GuiGraphicsExtractor g, String value, int x, int y, int right, int bottom) {
+        if (value == null || value.isBlank()) return false;
+        Path path;
+        try { path = Path.of(value); } catch (RuntimeException invalid) { return false; }
+        if (!Files.isRegularFile(path)) return false;
+        try {
+            String key = path.toAbsolutePath().normalize() + ":" + Files.getLastModifiedTime(path).toMillis();
+            if (!key.equals(loadedProfile)) {
+                try (var in = Files.newInputStream(path)) {
+                    Minecraft.getInstance().getTextureManager().register(
+                            PROFILE_ID,
+                            new DynamicTexture(() -> "Resource Builder menu background", NativeImage.read(in)));
+                }
+                loadedProfile = key;
+            }
+            g.blit(PROFILE_ID, x, y, right, bottom, 0, 1, 0, 1);
+            return true;
+        } catch (IOException error) {
+            return false;
+        }
+    }
 
     static void importImage(Path path) throws IOException {
         if (Files.size(path) > 16_000_000L) throw new IOException("Max. 16 MB");

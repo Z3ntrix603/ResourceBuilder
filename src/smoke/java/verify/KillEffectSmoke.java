@@ -107,6 +107,8 @@ public final class KillEffectSmoke {
             Minecraft client, String mode, boolean localKill) {
         StudioSettings.S.killEffect = mode;
         Set<Particle> before = glows(client.particleEngine);
+        long lightningBefore = java.util.stream.StreamSupport.stream(client.level.entitiesForRendering().spliterator(), false)
+                .filter(net.minecraft.world.entity.LightningBolt.class::isInstance).count();
         var server = client.getSingleplayerServer();
         var playerId = client.player.getUUID();
         return server.submit(
@@ -166,12 +168,11 @@ public final class KillEffectSmoke {
                                 if (mode.equals("Soul") && dot.getBoundingBox().minY <= start)
                                     throw new AssertionError("Soul did not ascend");
                             } else {
-                                var heights =
-                                        emitted.stream()
-                                                .mapToDouble(p -> p.getBoundingBox().minY)
-                                                .summaryStatistics();
-                                if (heights.getMax() - heights.getMin() < 4 || emitted.isEmpty())
-                                    throw new AssertionError("Missing vertical lightning bolt");
+                                long lightningAfter = java.util.stream.StreamSupport.stream(
+                                                client.level.entitiesForRendering().spliterator(), false)
+                                        .filter(net.minecraft.world.entity.LightningBolt.class::isInstance).count();
+                                if (lightningAfter <= lightningBefore)
+                                    throw new AssertionError("Missing vanilla lightning bolt");
                             }
                         },
                         client);

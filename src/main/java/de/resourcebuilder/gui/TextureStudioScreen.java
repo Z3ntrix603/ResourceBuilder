@@ -134,6 +134,19 @@ public final class TextureStudioScreen extends StudioScreen {
                 S.save();
                 rebuildWidgets();
               }));
+      if (tab == StudioTab.KILLS)
+        addRenderableWidget(
+            new StudioColorButton(
+                gridX,
+                toolbarY,
+                Math.min(120, right - gridX - 122),
+                "Effect color",
+                S.visual.finisherColor,
+                value -> {
+                  S.visual.finisherColor = value;
+                  S.save();
+                },
+                this::rebuildWidgets));
       return;
     }
     int y = toolbarY;
