@@ -17,6 +17,7 @@ public class StudioSmoke implements ClientModInitializer {
 
   public void onInitializeClient() {
     ProfileSmoke.run();
+    VisualsScreenSmoke.run();
     ClientTickEvents.END_CLIENT_TICK.register(
         mc -> {
           if (++ticks < 100 || ticks % 24 != 0 || mc.gui.overlay() != null) return;
@@ -214,12 +215,21 @@ public class StudioSmoke implements ClientModInitializer {
               case 17 -> {
                 pressTab("Impact");
                 pressTab("Off");
+                pressTab("Visuals");
+              }
+              case 18 -> {
+                if (!(mc.gui.screen() instanceof de.resourcebuilder.gui.VisualsScreen))
+                  throw new AssertionError("Visuals navigation failed");
+                cap(mc, "visuals");
+              }
+              case 19 -> {
+                mc.gui.screen().onClose();
                 screen.onClose();
                 MaceEffectSmoke.run(mc);
                 Files.writeString(
                     Path.of("PASSED"),
                     "Verified English studio navigation, HUD galleries,"
-                        + " isolated blur, kill and mace effects, armor and"
+                        + " visual controls, isolated blur, kill and mace effects, armor and"
                         + " crystal textures, settings, sound and export.");
                 mc.stop();
               }

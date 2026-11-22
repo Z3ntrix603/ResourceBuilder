@@ -11,6 +11,7 @@ enum StudioTab {
   FONT("Font", PvPItem.FONT),
   CROSSHAIR("Crosshair", PvPItem.CROSSHAIR),
   EFFECTS("Effects", PvPItem.CRIT_PARTICLES),
+  VISUALS("Visuals", null),
   MACE("Mace FX", null),
   KILLS("Kill Effects", null),
   SOUNDS("Sounds", PvPItem.SOUND_MACE);
