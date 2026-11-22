@@ -4,17 +4,20 @@ import static de.resourcebuilder.StudioSettings.S;
 
 import java.util.List;
 import java.util.function.DoubleConsumer;
-import net.minecraft.client.gui.GuiGraphics;
+import java.nio.file.Path;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 public final class VisualsScreen extends StudioScreen {
   public static final List<String> PAGE_LABELS =
-      List.of("Global Color", "Particles", "Fire", "Glint");
+      List.of("Global Color", "Particles", "Fire", "Glint", "Sky", "Menu");
 
   private final Screen back;
   private int page;
   private int left, right, top, bottom, nav, contentX, rowY;
+  private String importSlot = "";
+  private String status = "";
 
   public VisualsScreen(Screen back) {
     super(Component.literal("Visuals"));
@@ -67,6 +70,54 @@ public final class VisualsScreen extends StudioScreen {
       case 1 -> particles();
       case 2 -> fire();
       case 3 -> glint();
+      case 4 -> sky();
+      case 5 -> menu();
+    }
+  }
+
+  private void sky() {
+    color("Sun", S.visual.sunColor, value -> S.visual.sunColor = value);
+    color("Moon", S.visual.moonColor, value -> S.visual.moonColor = value);
+    color("Stars", S.visual.starColor, value -> S.visual.starColor = value);
+    color("Clouds", S.visual.cloudColor, value -> S.visual.cloudColor = value);
+    color("Fog", S.visual.fogColor, value -> S.visual.fogColor = value);
+    slider("Star brightness", S.visual.starBrightness, 0, 2, value -> S.visual.starBrightness = value);
+    slider("Cloud opacity", S.visual.cloudOpacity, 0, 1, value -> S.visual.cloudOpacity = value);
+    importAction("Sky PNG", "sky", S.visual.skyImage);
+  }
+
+  private void menu() {
+    color("Background tint", S.visual.menuTint, value -> S.visual.menuTint = value);
+    slider("Transparency", S.visual.menuOpacity, 0, 1, value -> S.visual.menuOpacity = value);
+    slider("Blur", S.visual.menuBlur, 0, 2, value -> S.visual.menuBlur = value);
+    importAction("Menu image", "menu", S.visual.menuImage);
+    importAction("Main-menu panorama", "panorama", S.visual.panoramaImage);
+  }
+
+  private void importAction(String label, String slot, String current) {
+    action(label + " · " + (current == null || current.isBlank() ? "Drop PNG" : "Loaded"), () -> {
+      importSlot = slot;
+      status = "Drop a PNG anywhere in this window";
+    });
+  }
+
+  @Override
+  public void onFilesDrop(List<Path> paths) {
+    if (importSlot.isBlank() || paths.isEmpty()) return;
+    try {
+      Path imported = de.resourcebuilder.profile.ImageImportService.importPng(
+          paths.getFirst(), Path.of("config", "resourcebuilder", "imports"), importSlot);
+      switch (importSlot) {
+        case "sky" -> S.visual.skyImage = imported.toString();
+        case "menu" -> S.visual.menuImage = imported.toString();
+        case "panorama" -> S.visual.panoramaImage = imported.toString();
+      }
+      status = "Imported " + paths.getFirst().getFileName();
+      importSlot = "";
+      S.save();
+      rebuildWidgets();
+    } catch (java.io.IOException error) {
+      status = error.getMessage();
     }
   }
 
@@ -195,17 +246,34 @@ public final class VisualsScreen extends StudioScreen {
         S.visual.glintSpeed = defaults.glintSpeed;
         S.visual.glintPattern = defaults.glintPattern;
       }
+      case 4 -> {
+        S.visual.sunColor = defaults.sunColor;
+        S.visual.moonColor = defaults.moonColor;
+        S.visual.starColor = defaults.starColor;
+        S.visual.cloudColor = defaults.cloudColor;
+        S.visual.fogColor = defaults.fogColor;
+        S.visual.starBrightness = defaults.starBrightness;
+        S.visual.cloudOpacity = defaults.cloudOpacity;
+        S.visual.skyImage = "";
+      }
+      case 5 -> {
+        S.visual.menuTint = defaults.menuTint;
+        S.visual.menuOpacity = defaults.menuOpacity;
+        S.visual.menuBlur = defaults.menuBlur;
+        S.visual.menuImage = "";
+        S.visual.panoramaImage = "";
+      }
     }
   }
 
   @Override
-  public void render(GuiGraphics graphics, int mx, int my, float dt) {
+  public void extractRenderState(GuiGraphicsExtractor graphics, int mx, int my, float dt) {
     rounded(graphics, left, top, right, bottom, 10, 0xec101a20);
     rounded(graphics, left + 5, top + 43, left + nav, bottom - 8, 7, 0x78152227);
-    graphics.drawString(font, "Resource Builder", left + 80, top + 11, TextureStudioScreen.TEXT, false);
-    graphics.drawString(font, "Visuals · " + PAGE_LABELS.get(page), contentX, top + 48, TextureStudioScreen.ACCENT, false);
-    graphics.drawString(font, "Mod effect · live preview", contentX, bottom - 20, TextureStudioScreen.MUTED, false);
-    super.render(graphics, mx, my, dt);
+    graphics.text(font, "Resource Builder", left + 80, top + 11, TextureStudioScreen.TEXT, false);
+    graphics.text(font, "Visuals · " + PAGE_LABELS.get(page), contentX, top + 48, TextureStudioScreen.ACCENT, false);
+    graphics.text(font, status.isBlank() ? "Mod effect · live preview" : status, contentX, bottom - 20, TextureStudioScreen.MUTED, false);
+    super.extractRenderState(graphics, mx, my, dt);
   }
 
   @Override

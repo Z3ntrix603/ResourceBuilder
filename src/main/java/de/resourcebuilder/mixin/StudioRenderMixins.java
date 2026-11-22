@@ -100,6 +100,9 @@ abstract class SkyMixin {
         if (tint != 0)
             state.skyColor =
                     net.minecraft.util.ARGB.srgbLerp(.48f, state.skyColor, 0xff000000 | tint);
+        var visual = S.visual;
+        state.starBrightness = Math.clamp(state.starBrightness * (float) visual.starBrightness, 0, 1);
+        state.skyColor = net.minecraft.util.ARGB.srgbLerp(.35f, state.skyColor, 0xff000000 | visual.fogColor);
     }
 }
 
