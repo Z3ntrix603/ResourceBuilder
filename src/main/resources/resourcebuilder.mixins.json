@@ -24,6 +24,7 @@
     "ParticleVisualAccess",
     "GameRendererPostAccess",
     "PostPassColorMixin",
+    "InventoryHighlightMixin",
     "IntegratedKillCreditMixin",
     "RemoteKillEffectMixin"
   ],

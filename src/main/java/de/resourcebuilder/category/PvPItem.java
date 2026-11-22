@@ -38,12 +38,13 @@ public enum PvPItem {
     CRIT_PARTICLES("Crit Particles", "particle/critical_hit"),
     CRYSTAL_EXPLOSION("Crystal Explosion", "particle/explosion_0"),
     TOTEM_POPS("Totem Pop", "particle/glitter_0"),
-    BLOCKS("Grass Block", "block/grass_block_top"),
+    BLOCKS("Natural Blocks", "block/grass_block_top"),
     XP("XP Bottle", "item/experience_bottle"),
     SHOVEL("Diamond Shovel", "item/diamond_shovel"),
     SPEAR("Spear", "item/netherite_spear"),
     TRIDENT("Trident", "item/trident"),
     HUD("Hotbar", "gui/sprites/hud/hotbar"),
+    INVENTORY("Inventory", "gui/container/inventory"),
     HEARTS("Hearts", "gui/sprites/hud/heart/full"),
     HUNGER("Hunger", "gui/sprites/hud/food_full"),
     XP_BAR("XP Bar", "gui/sprites/hud/experience_bar_progress"),
@@ -132,6 +133,7 @@ public enum PvPItem {
             case SPEAR -> Items.NETHERITE_SPEAR.getDefaultInstance();
             case TRIDENT -> Items.TRIDENT.getDefaultInstance();
             case HUD -> Items.BUNDLE.getDefaultInstance();
+            case INVENTORY -> Items.BUNDLE.getDefaultInstance();
             case HEARTS -> Items.GLISTERING_MELON_SLICE.getDefaultInstance();
             case HUNGER -> Items.COOKED_CHICKEN.getDefaultInstance();
             case XP_BAR -> Items.EXPERIENCE_BOTTLE.getDefaultInstance();

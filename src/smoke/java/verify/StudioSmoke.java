@@ -56,6 +56,7 @@ public class StudioSmoke implements ClientModInitializer {
                         var pm = LivePackManager.getInstance();
                         switch (stage++) {
                             case 0 -> {
+                                InventoryBlocksSmoke.run();
                                 mc.player.connection.sendCommand(
                                         "summon minecraft:end_crystal ~3 ~1 ~");
                                 mc.player.connection.sendCommand("give @s minecraft:diamond_sword");

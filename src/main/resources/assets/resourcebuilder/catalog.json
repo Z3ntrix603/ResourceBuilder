@@ -156,7 +156,22 @@
     "block/grass_block_top",
     "block/grass_block_side",
     "block/grass_block_side_overlay",
-    "block/dirt"
+    "block/dirt",
+    "block/stone",
+    "block/deepslate",
+    "block/cobblestone",
+    "block/gravel",
+    "block/sand",
+    "block/oak_log",
+    "block/oak_log_top",
+    "block/oak_leaves",
+    "block/coal_ore",
+    "block/iron_ore",
+    "block/diamond_ore",
+    "block/redstone_ore",
+    "block/netherrack",
+    "block/nether_quartz_ore",
+    "block/end_stone"
   ],
   "XP": [
     "item/experience_bottle"
@@ -175,6 +190,9 @@
   "HUD": [
     "gui/sprites/hud/hotbar",
     "gui/sprites/hud/hotbar_selection"
+  ],
+  "INVENTORY": [
+    "gui/container/inventory"
   ],
   "HEARTS": [
     "gui/sprites/hud/heart/full",
