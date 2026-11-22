@@ -104,6 +104,34 @@ final class ProfilesScreen extends StudioScreen {
                                 message = "Apply a style first";
                             }
                         }));
+        addRenderableWidget(
+                new StudioButton(
+                        l,
+                        height - 52,
+                        w / 2 - 3,
+                        18,
+                        "Copy share code",
+                        () -> {
+                            minecraft.keyboardHandler.setClipboard(
+                                    de.resourcebuilder.profile.ShareCode.encode(
+                                            de.resourcebuilder.StudioSettings.S));
+                            message = "Share code copied";
+                        }));
+        addRenderableWidget(
+                new StudioButton(
+                        l + w / 2 + 2,
+                        height - 52,
+                        w / 2 - 2,
+                        18,
+                        "Import share code",
+                        () -> {
+                            boolean applied =
+                                    de.resourcebuilder.profile.ShareCode.apply(
+                                            minecraft.keyboardHandler.getClipboard(),
+                                            de.resourcebuilder.StudioSettings.S);
+                            message = applied ? "Share code imported" : "Clipboard has no valid RB3 code";
+                            if (applied) de.resourcebuilder.StudioSettings.S.save();
+                        }));
     }
 
     @Override
