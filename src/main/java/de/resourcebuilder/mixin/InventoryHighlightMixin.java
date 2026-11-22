@@ -2,7 +2,7 @@ package de.resourcebuilder.mixin;
 
 import de.resourcebuilder.StudioSettings;
 import de.resourcebuilder.render.InventoryHighlight;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.world.inventory.Slot;
 import org.spongepowered.asm.mixin.Mixin;
@@ -16,9 +16,9 @@ abstract class InventoryHighlightMixin {
   @Shadow protected int leftPos;
   @Shadow protected int topPos;
 
-  @Inject(method = "extractSlot", at = @At("HEAD"))
+  @Inject(method = "renderSlot", at = @At("HEAD"))
   private void rb$importantItemBackground(
-      GuiGraphicsExtractor graphics, Slot slot, int mouseX, int mouseY, CallbackInfo ci) {
+      GuiGraphics graphics, Slot slot, CallbackInfo ci) {
     var profile = StudioSettings.S.visual;
     if (!profile.inventoryHighlight || !InventoryHighlight.isImportant(slot.getItem())) return;
     int alpha = (int) Math.round(profile.inventoryHighlightOpacity * 255);
