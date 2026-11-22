@@ -80,6 +80,7 @@ public final class VisualsScreen extends StudioScreen {
   }
 
   private void particles() {
+    action("Custom colors · " + (S.visual.particleColorsEnabled ? "On" : "Off"), () -> S.visual.particleColorsEnabled = !S.visual.particleColorsEnabled);
     color("Critical hits", S.visual.critColor, value -> S.visual.critColor = value);
     color("Totem pops", S.visual.totemColor, value -> S.visual.totemColor = value);
     color("Explosions", S.visual.explosionColor, value -> S.visual.explosionColor = value);
@@ -176,6 +177,7 @@ public final class VisualsScreen extends StudioScreen {
         S.visual.totemColor = defaults.totemColor;
         S.visual.explosionColor = defaults.explosionColor;
         S.visual.enchantmentColor = defaults.enchantmentColor;
+        S.visual.particleColorsEnabled = false;
         S.visual.particleSize = defaults.particleSize;
         S.visual.particleAmount = defaults.particleAmount;
         S.visual.particleLifetime = defaults.particleLifetime;
