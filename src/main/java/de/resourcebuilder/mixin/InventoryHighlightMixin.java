@@ -18,7 +18,7 @@ abstract class InventoryHighlightMixin {
 
   @Inject(method = "renderSlot", at = @At("HEAD"))
   private void rb$importantItemBackground(
-      GuiGraphics graphics, Slot slot, CallbackInfo ci) {
+      GuiGraphics graphics, Slot slot, int mouseX, int mouseY, CallbackInfo ci) {
     var profile = StudioSettings.S.visual;
     if (!profile.inventoryHighlight || !InventoryHighlight.isImportant(slot.getItem())) return;
     int alpha = (int) Math.round(profile.inventoryHighlightOpacity * 255);
