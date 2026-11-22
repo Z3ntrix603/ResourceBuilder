@@ -2,6 +2,7 @@ package de.resourcebuilder;
 
 import com.google.gson.Gson;
 import de.resourcebuilder.category.PvPItem;
+import de.resourcebuilder.profile.VisualProfile;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.*;
@@ -9,6 +10,7 @@ import java.util.*;
 public final class StudioSettings {
   private static final Path FILE = Path.of("config", "resourcebuilder", "studio.json");
   public static final StudioSettings S = load();
+  public VisualProfile visual = new VisualProfile();
   public boolean selfHit = true, fadeHit = true;
   public Set<String> hiddenParticles = new HashSet<>();
   public String killEffect = "Off";
@@ -46,7 +48,11 @@ public final class StudioSettings {
     if (Files.isRegularFile(FILE))
       try (var reader = Files.newBufferedReader(FILE)) {
         var settings = new Gson().fromJson(reader, StudioSettings.class);
-        if (settings != null) return settings;
+        if (settings != null) {
+          if (settings.visual == null) settings.visual = new VisualProfile();
+          settings.visual.normalized();
+          return settings;
+        }
       } catch (Exception e) {
         ResourceBuilderMod.LOGGER.warn("Cannot read studio settings", e);
       }

@@ -16,6 +16,7 @@ public class StudioSmoke implements ClientModInitializer {
   TextureStudioScreen screen;
 
   public void onInitializeClient() {
+    ProfileSmoke.run();
     ClientTickEvents.END_CLIENT_TICK.register(
         mc -> {
           if (++ticks < 100 || ticks % 24 != 0 || mc.gui.overlay() != null) return;
