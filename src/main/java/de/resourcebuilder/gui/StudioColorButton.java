@@ -16,10 +16,8 @@ final class StudioColorButton extends StudioButton {
         18,
         label + " · #" + String.format("%06X", current & 0xffffff),
         () -> {
-          int index = 0;
-          for (int i = 0; i < PALETTE.length; i++) if (PALETTE[i] == current) index = i;
-          change.accept(PALETTE[(index + 1) % PALETTE.length]);
-          refresh.run();
+          var minecraft = net.minecraft.client.Minecraft.getInstance();
+          minecraft.setScreenAndShow(new ColorPickerScreen(minecraft.gui.screen(), current, change, refresh));
         });
   }
 }
