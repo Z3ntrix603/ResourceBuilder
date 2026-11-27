@@ -1,7 +1,7 @@
 package de.resourcebuilder.gui;
 
 import java.util.function.IntConsumer;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.EditBox;
@@ -76,16 +76,16 @@ final class ColorPickerScreen extends StudioScreen {
 
   private static String format(int rgb) { return String.format("#%06X", rgb & 0xffffff); }
 
-  @Override public void render(GuiGraphics g, int mx, int my, float dt) {
+  @Override public void extractRenderState(GuiGraphicsExtractor g, int mx, int my, float dt) {
     rounded(g, left, top, right, bottom, 11, 0xf4101a20);
-    g.drawString(font, "Choose color", left + 22, top + 20, TextureStudioScreen.TEXT, false);
-    g.drawString(font, "Saturation / brightness", left + 22, top + 43, TextureStudioScreen.MUTED, false);
-    g.drawString(font, "LIVE PREVIEW", right - 140, top + 43, TextureStudioScreen.ACCENT, false);
+    g.text(font, "Choose color", left + 22, top + 20, TextureStudioScreen.TEXT, false);
+    g.text(font, "Saturation / brightness", left + 22, top + 43, TextureStudioScreen.MUTED, false);
+    g.text(font, "LIVE PREVIEW", right - 140, top + 43, TextureStudioScreen.ACCENT, false);
     rounded(g, right - 140, top + 56, right - 28, top + 82, 6, 0xff000000 | current);
-    g.renderOutline(right - 140, top + 56, 112, 26, 0x80ffffff);
-    g.drawString(font, "Hex", right - 140, top + 84, TextureStudioScreen.MUTED, false);
-    g.drawString(font, format(current), right - 140, top + 196, TextureStudioScreen.TEXT, false);
-    super.render(g, mx, my, dt);
+    g.outline(right - 140, top + 56, 112, 26, 0x80ffffff);
+    g.text(font, "Hex", right - 140, top + 84, TextureStudioScreen.MUTED, false);
+    g.text(font, format(current), right - 140, top + 196, TextureStudioScreen.TEXT, false);
+    super.extractRenderState(g, mx, my, dt);
   }
 
   @Override public void onClose() {
@@ -101,7 +101,7 @@ final class ColorPickerScreen extends StudioScreen {
     }
     @Override public void onClick(MouseButtonEvent event, boolean twice) { pick(event.x(), event.y()); }
     @Override protected void onDrag(MouseButtonEvent event, double dx, double dy) { pick(event.x(), event.y()); }
-    @Override protected void renderWidget(GuiGraphics g, int mx, int my, float dt) {
+    @Override protected void extractWidgetRenderState(GuiGraphicsExtractor g, int mx, int my, float dt) {
       int cols = 32, rows = 18;
       for (int yy = 0; yy < rows; yy++) for (int xx = 0; xx < cols; xx++) {
         int x1 = getX() + xx * width / cols, x2 = getX() + (xx + 1) * width / cols;
@@ -110,7 +110,7 @@ final class ColorPickerScreen extends StudioScreen {
             xx / (float) (cols - 1), 1 - yy / (float) (rows - 1)));
       }
       int cx = getX() + Math.round(saturation * width), cy = getY() + Math.round((1 - value) * height);
-      g.renderOutline(cx - 3, cy - 3, 7, 7, 0xffffffff); g.renderOutline(cx - 2, cy - 2, 5, 5, 0xff000000);
+      g.outline(cx - 3, cy - 3, 7, 7, 0xffffffff); g.outline(cx - 2, cy - 2, 5, 5, 0xff000000);
     }
     @Override protected void updateWidgetNarration(NarrationElementOutput output) { defaultButtonNarrationText(output); }
   }
@@ -119,12 +119,12 @@ final class ColorPickerScreen extends StudioScreen {
     HueSlider(int x, int y, int w) { super(x, y, w, 18, Component.empty(), hue); updateMessage(); }
     @Override protected void updateMessage() { setMessage(Component.literal("Hue  " + Math.round(value * 360) + "°")); }
     @Override protected void applyValue() { setHsv((float) value, saturation, ColorPickerScreen.this.value); }
-    @Override public void renderWidget(GuiGraphics g, int mx, int my, float dt) {
+    @Override public void extractWidgetRenderState(GuiGraphicsExtractor g, int mx, int my, float dt) {
       for (int i = 0; i < 36; i++) g.fill(getX() + i * width / 36, getY(), getX() + (i + 1) * width / 36,
           getY() + height, 0xff000000 | ColorPickerModel.fromHsv(i / 36f, 1, 1));
       g.fill(getX() + (int) (value * (width - 4)), getY() - 1,
           getX() + (int) (value * (width - 4)) + 4, getY() + height + 1, 0xffffffff);
-      g.drawCenteredString(font, getMessage(), getX() + width / 2, getY() + 5, 0xff101418);
+      g.centeredText(font, getMessage(), getX() + width / 2, getY() + 5, 0xff101418);
     }
   }
 
@@ -132,9 +132,9 @@ final class ColorPickerScreen extends StudioScreen {
     private final int color;
     SwatchButton(int x, int y, int color) { super(x, y, 23, 23, Component.literal(format(color))); this.color = color; }
     @Override public void onClick(MouseButtonEvent event, boolean twice) { setRgb(color, true); }
-    @Override protected void renderWidget(GuiGraphics g, int mx, int my, float dt) {
+    @Override protected void extractWidgetRenderState(GuiGraphicsExtractor g, int mx, int my, float dt) {
       rounded(g, getX(), getY(), getX() + width, getY() + height, 5, 0xff000000 | color);
-      if (isHoveredOrFocused()) g.renderOutline(getX(), getY(), width, height, 0xffffffff);
+      if (isHoveredOrFocused()) g.outline(getX(), getY(), width, height, 0xffffffff);
     }
     @Override protected void updateWidgetNarration(NarrationElementOutput output) { defaultButtonNarrationText(output); }
   }
