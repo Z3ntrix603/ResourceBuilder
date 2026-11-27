@@ -17,6 +17,7 @@ public class StudioSmoke implements ClientModInitializer {
 
   public void onInitializeClient() {
     ProfileSmoke.run();
+    EquipmentSetSmoke.run();
     ImageImportSmoke.run();
     VisualsScreenSmoke.run();
     VisualRuntimeSmoke.run();
