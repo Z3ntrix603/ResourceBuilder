@@ -25,6 +25,8 @@
     "GameRendererPostAccess",
     "PostPassColorMixin",
     "InventoryHighlightMixin",
+    "AvatarRendererMixin",
+    "LivingRendererAccess",
     "IntegratedKillCreditMixin",
     "RemoteKillEffectMixin"
   ],

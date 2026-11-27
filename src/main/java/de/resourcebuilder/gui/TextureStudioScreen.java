@@ -276,6 +276,10 @@ public final class TextureStudioScreen extends StudioScreen {
     }
 
     private void openTab(StudioTab section) {
+        if (section == StudioTab.SETS) {
+            minecraft.setScreen(new EquipmentSetsScreen(this));
+            return;
+        }
         if (section == StudioTab.VISUALS) {
             minecraft.setScreen(new VisualsScreen(this));
             return;

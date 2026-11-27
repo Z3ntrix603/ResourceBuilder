@@ -9,6 +9,7 @@ Place the mod JAR and Fabric API in your instance's `mods` folder. Replace any o
 - Choose **Items** or **Armor** to see placed crystals and equipped armor. Use **Settings → Controls** to toggle rotating previews.
 - **Hotbar**, **Sky**, **Font**, and **Crosshair** each have a gallery. **Vitals** lets you pick different styles for hearts, hunger, and the experience bar.
 - **Visuals** controls global saturation/contrast/brightness/gamma/hue, particle colors and density, fire, glint, sky colors, and clean menu backgrounds. Sky and menu pages accept PNG files by drag-and-drop.
+- **3D Sets** adds three original resource-pack-style loadouts: Void Warden, Frost Seraph, and Crimson Revenant. Each set includes cached horned or winged armor geometry, back attachments, and a large custom 3D netherite Spear.
 - **Effects** contains texture styles for particles and fire. **Kill Effects** provides a vanilla lightning bolt, expanding ring, ascending souls, or a spark burst at the defeated entity. Finishers support a custom color and local sound.
 - **Mace FX** adds Shockwave, Fracture, and Impact effects to your mace hits. Each style has its own local sound and can be disabled independently.
 - Singleplayer uses Minecraft's kill credit. On multiplayer servers, the client looks for damage attributed to you immediately before the death event. A server that omits one of these updates can cause the effect to be skipped.
