@@ -5,6 +5,7 @@ import de.resourcebuilder.category.PvPItem;
 enum StudioTab {
   ITEMS("Items", PvPItem.CRYSTALS),
   ARMOR("Armor", PvPItem.DIAMOND_ARMOR),
+  SETS("3D Sets", null),
   HOTBAR("Hotbar", PvPItem.HUD),
   VITALS("Vitals", PvPItem.HEARTS),
   SKY("Sky", PvPItem.SKY),

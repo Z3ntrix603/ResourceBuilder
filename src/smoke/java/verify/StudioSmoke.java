@@ -248,7 +248,32 @@ public class StudioSmoke implements ClientModInitializer {
               }
               case 20 -> {
                 mc.gui.screen().onClose();
+                pressTab("3D Sets");
+              }
+              case 21 -> {
+                if (!(mc.gui.screen() instanceof de.resourcebuilder.gui.EquipmentSetsScreen))
+                  throw new AssertionError("3D Sets navigation failed");
+                cap(mc, "3d-sets");
+              }
+              case 22 -> {
+                mc.gui.screen().onClose();
                 screen.onClose();
+                de.resourcebuilder.equipment.EquipmentSetManager.select("crimson_revenant");
+                mc.player.connection.sendCommand("item replace entity @s armor.head with minecraft:netherite_helmet");
+                mc.player.connection.sendCommand("item replace entity @s armor.chest with minecraft:netherite_chestplate");
+                mc.player.connection.sendCommand("item replace entity @s armor.legs with minecraft:netherite_leggings");
+                mc.player.connection.sendCommand("item replace entity @s armor.feet with minecraft:netherite_boots");
+                mc.player.connection.sendCommand("item replace entity @s weapon.mainhand with minecraft:netherite_spear");
+                mc.player.connection.sendCommand("tp @s 0 150 0");
+                mc.player.connection.sendCommand("effect give @s minecraft:slow_falling 10 0 true");
+                mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);
+              }
+              case 23 -> {
+                cap(mc, "3d-equipment-world");
+              }
+              case 24 -> {
+                de.resourcebuilder.equipment.EquipmentSetManager.select("off");
+                mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);
                 MaceEffectSmoke.run(mc);
                 Files.writeString(
                     Path.of("PASSED"),
