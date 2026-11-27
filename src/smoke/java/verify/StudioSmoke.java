@@ -17,7 +17,6 @@ public class StudioSmoke implements ClientModInitializer {
 
   public void onInitializeClient() {
     ProfileSmoke.run();
-    ColorPickerSmoke.run();
     ImageImportSmoke.run();
     VisualsScreenSmoke.run();
     VisualRuntimeSmoke.run();
@@ -228,6 +227,7 @@ public class StudioSmoke implements ClientModInitializer {
                 cap(mc, "mace-effects");
               }
               case 17 -> {
+                pressTab("Impact");
                 pressTab("Off");
                 pressTab("Visuals");
               }
@@ -237,35 +237,15 @@ public class StudioSmoke implements ClientModInitializer {
                 de.resourcebuilder.StudioSettings.S.visual.colorEnabled = true;
                 de.resourcebuilder.StudioSettings.S.visual.saturation = 1.2;
                 cap(mc, "visuals");
-                var visuals = mc.gui.screen();
-                var particles = visuals.children().stream()
-                    .filter(net.minecraft.client.gui.components.Button.class::isInstance)
-                    .map(net.minecraft.client.gui.components.Button.class::cast)
-                    .filter(b -> b.getMessage().getString().equals("Particles")).findFirst().orElseThrow();
-                particles.onPress(new KeyEvent(257, 0, 0));
               }
               case 19 -> {
-                var color = mc.gui.screen().children().stream()
-                    .filter(net.minecraft.client.gui.components.Button.class::isInstance)
-                    .map(net.minecraft.client.gui.components.Button.class::cast)
-                    .filter(b -> b.getMessage().getString().startsWith("Critical hits · #"))
-                    .findFirst().orElseThrow();
-                color.onPress(new KeyEvent(257, 0, 0));
-              }
-              case 20 -> {
-                if (!mc.gui.screen().getTitle().getString().equals("Color picker"))
-                  throw new AssertionError("Color picker did not open");
-                cap(mc, "color-picker");
-                mc.gui.screen().onClose();
-              }
-              case 21 -> {
                 if (!de.resourcebuilder.render.VisualRuntime.COLOR_GRADE.equals(
                     mc.gameRenderer.currentPostEffect()))
                   throw new AssertionError("Global color post effect was not activated");
                 cap(mc, "color-filter");
                 de.resourcebuilder.StudioSettings.S.visual.colorEnabled = false;
               }
-              case 22 -> {
+              case 20 -> {
                 mc.gui.screen().onClose();
                 screen.onClose();
                 MaceEffectSmoke.run(mc);
